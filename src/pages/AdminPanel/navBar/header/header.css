@@ -1,0 +1,59 @@
+.header-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 20px;
+    border-radius: 10px;
+}
+
+.logo-img {
+    width: 400px;
+}
+
+.logout-icon {
+    cursor: pointer;
+    font-size: 30px;
+    color: #00457e;
+}
+
+.nav-bar {
+    font-family: 'Noto Sans Semi Condensed', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'Noto Sans Semi Condensed Fallback', sans-serif !important;
+    display: flex;
+    align-items: center;
+    border-bottom: 10px solid #00457e;
+    font-size: 18px;
+    font-weight: 400;
+}
+
+.nav-links {
+    display: flex;
+    flex-direction: row;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: #00457e;
+    margin: 0 10px;
+    padding: 10px;
+    border-bottom: 2px solid transparent;
+   
+}
+
+.nav-link:hover {
+    background-color: #dfdfdf;
+}
+
+.nav-link-active {
+    background-color: #dfdfdf;
+    border-bottom: 10px solid #bfb497; /* Matches the nav-bar bottom border */
+    color: #bfb497; /* Matches the active link color */
+}
+
+.nav-link-active:hover {
+    background-color: #dfdfdf;
+}

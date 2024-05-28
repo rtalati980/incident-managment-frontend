@@ -1,0 +1,114 @@
+.eit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 20px;
+  }
+  
+  .add {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .in {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .in input {
+    padding: 10px;
+    font-size: 16px;
+    width: 300px;
+    border: 2px solid #00457e;
+    border-radius: 0PX;
+    text-align: center;
+  }
+  
+  .sub {
+    margin-top: 10px;
+  }
+  
+  .sub input[type='submit'] {
+    padding: 10px 20px;
+    font-size: 16px;
+    color: white;
+    background-color: #00457e;
+    border: none;
+    cursor: pointer;
+    border-radius: 0px;
+  }
+  
+  .sub input[type='submit']:hover {
+    background-color: #bfb497;
+  }
+  
+
+  
+  input:hover {
+    border: 3px solid #bfb497;
+  }
+  
+ input:current{
+    border: 2px solid #bfb497;
+  }
+ input:not(:placeholder-shown) {
+    border-color: #bfb497; /* Border color when the input has text */
+  }
+  .location-table {
+    width: 90%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  
+  .location-table th,
+  .location-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+  }
+  
+  .location-table th {
+    background-color: #f2f2f2;
+    
+   
+  }
+  
+  .location-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+
+  }
+  
+  .location-table tr{
+    color: #5b5b5b;
+  }
+
+  .location-table tr:hover {
+    background-color: #f1f1f1;
+    color: #5b5b5b;
+  }
+  
+  .location-table th {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    background-color: #00457e;
+    color: white;
+  }
+  
+  button {
+    padding: 5px 10px;
+    font-size: 14px;
+    color: white;
+    background-color: #00457e;
+    border: none;
+    border-radius: 0px !important;
+    cursor: pointer;
+    margin: 0 5px;
+  }
+  
+  button:hover {
+    background-color: #bfb497 !important;
+  }
+  

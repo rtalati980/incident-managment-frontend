@@ -1,0 +1,109 @@
+.add-user {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px;
+}
+
+.user-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.input-group input,
+.input-group select {
+  padding: 10px;
+  font-size: 16px;
+  width: 300px;
+  border: 1px solid #ccc;
+  border-radius: 0px;
+}
+
+.submit-group {
+  margin-top: 10px;
+}
+
+.submit-group input[type='submit'] {
+  padding: 10px 20px;
+  font-size: 16px;
+  color: white;
+  background-color: #00457e;
+  border: none;
+  border-radius: 0px;
+  cursor: pointer;
+}
+
+.submit-group input[type='submit']:hover {
+  background-color: #003366;
+}
+
+.search-bar {
+  margin: 20px 0;
+  width: 300px;
+}
+
+.search-bar input {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 0px;
+}
+
+.user-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.user-table th,
+.user-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+
+.user-table th {
+  background-color: #f2f2f2;
+}
+
+.user-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.user-table tr:hover {
+  background-color: #f1f1f1;
+}
+
+.user-table th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  background-color: #00457e;
+  color: white;
+}
+
+button,
+input[type='button'],
+input[type='submit'] {
+  padding: 5px 10px;
+  font-size: 14px;
+  color: white;
+  background-color: #00457e;
+  border: none;
+  border-radius: 0px;
+  cursor: pointer;
+  margin: 0 5px;
+}
+
+button:hover,
+input[type='button']:hover,
+input[type='submit']:hover {
+  background-color: #003366;
+}
