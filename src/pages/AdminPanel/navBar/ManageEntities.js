@@ -9,18 +9,37 @@ export default function ManageEntities() {
   const [subcategories, setSubcategories] = useState([]);
   const [editingCategoryId, setEditingCategoryId] = useState(null);
   const [editingSubcategoryId, setEditingSubcategoryId] = useState(null);
+  const [categoryMap, setCategoryMap] = useState(new Map());
 
   useEffect(() => {
+    fetchCategories();
+    fetchSubcategories();
+  }, []);
+
+  const fetchCategories = () => {
     fetch('http://localhost:5000/api/categories')
       .then(response => response.json())
-      .then(data => setCategories(data))
+      .then(data => {
+        setCategories(data);
+        const map = new Map();
+        data.forEach(category => map.set(category.id, category.name));
+        setCategoryMap(map);
+      })
       .catch(error => console.error('Error fetching categories:', error));
+  };
 
+  const fetchSubcategories = () => {
     fetch('http://localhost:5000/api/subcategories')
       .then(response => response.json())
       .then(data => setSubcategories(data))
       .catch(error => console.error('Error fetching subcategories:', error));
-  }, []);
+  };
+
+  const fetchCategoryById = (id) => {
+    return fetch(`http://localhost:5000/api/categories/${id}`)
+      .then(response => response.json())
+      .catch(error => console.error('Error fetching category:', error));
+  };
 
   const handleCategorySubmit = (event) => {
     event.preventDefault();
@@ -35,10 +54,18 @@ export default function ManageEntities() {
           body: JSON.stringify({ name: categoryName }),
         })
           .then(response => response.json())
-          .then(data => {
-            setCategories(categories.map(category => category.id === editingCategoryId ? data : category));
+          .then(updatedCategory => {
+            setCategories(categories.map(category => 
+              category.id === editingCategoryId ? updatedCategory : category
+            ));
+            setCategoryMap(prevMap => new Map(prevMap).set(updatedCategory.id, updatedCategory.name));
             setCategoryName('');
             setEditingCategoryId(null);
+            setSubcategories(subcategories.map(subcategory => 
+              subcategory.category_id === updatedCategory.id 
+                ? { ...subcategory, category_name: updatedCategory.name } 
+                : subcategory
+            ));
           })
           .catch(error => console.error('Error:', error));
       } else {
@@ -51,8 +78,9 @@ export default function ManageEntities() {
           body: JSON.stringify({ name: categoryName }),
         })
           .then(response => response.json())
-          .then(data => {
-            setCategories([...categories, data]);
+          .then(newCategory => {
+            setCategories([...categories, newCategory]);
+            setCategoryMap(prevMap => new Map(prevMap).set(newCategory.id, newCategory.name));
             setCategoryName('');
           })
           .catch(error => console.error('Error:', error));
@@ -70,11 +98,13 @@ export default function ManageEntities() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ name: subcategoryName, categoryId: selectedCategoryId }),
+          body: JSON.stringify({ name: subcategoryName, category_id: selectedCategoryId }),
         })
           .then(response => response.json())
-          .then(data => {
-            setSubcategories(subcategories.map(subcategory => subcategory.id === editingSubcategoryId ? data : subcategory));
+          .then(updatedSubcategory => {
+            setSubcategories(subcategories.map(subcategory => 
+              subcategory.id === editingSubcategoryId ? updatedSubcategory : subcategory
+            ));
             setSubcategoryName('');
             setSelectedCategoryId('');
             setEditingSubcategoryId(null);
@@ -87,13 +117,16 @@ export default function ManageEntities() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ name: subcategoryName, categoryId: selectedCategoryId }),
+          body: JSON.stringify({ name: subcategoryName, category_id: selectedCategoryId }),
         })
           .then(response => response.json())
-          .then(data => {
-            setSubcategories([...subcategories, data]);
+          .then(newSubcategory => {
+            setSubcategories([...subcategories, newSubcategory]);
             setSubcategoryName('');
             setSelectedCategoryId('');
+            fetchCategoryById(newSubcategory.category_id).then(category => {
+              setCategoryMap(prevMap => new Map(prevMap).set(category.id, category.name));
+            });
           })
           .catch(error => console.error('Error:', error));
       }
@@ -117,6 +150,12 @@ export default function ManageEntities() {
     })
       .then(() => {
         setCategories(categories.filter(category => category.id !== id));
+        setSubcategories(subcategories.filter(subcategory => subcategory.category_id !== id));
+        setCategoryMap(prevMap => {
+          const newMap = new Map(prevMap);
+          newMap.delete(id);
+          return newMap;
+        });
       })
       .catch(error => console.error('Error:', error));
   };
@@ -204,19 +243,19 @@ export default function ManageEntities() {
               <th>Action</th>
             </tr>
           </thead>
-        {/*  <tbody>
+          <tbody>
             {subcategories.map((subcategory, index) => (
               <tr key={subcategory.id}>
                 <td>{index + 1}</td>
                 <td>{subcategory.name}</td>
-                <td>{categories.find(category => category.id === subcategory.categoryId)?.name || 'Unknown'}</td>
+                <td>{subcategory.category_name}</td>
                 <td>
-                  <button onClick={() => handleSubcategoryEdit(subcategory.id, subcategory.name, subcategory.categoryId)}>Edit</button>
+                  <button onClick={() => handleSubcategoryEdit(subcategory.id, subcategory.name, subcategory.category_id)}>Edit</button>
                   <button onClick={() => handleSubcategoryDelete(subcategory.id)}>Delete</button>
                 </td>
               </tr>
             ))}
-          </tbody> */}
+          </tbody> 
         </table>
       </div>
     </div>

@@ -1,55 +1,118 @@
 import React, { useState, useEffect } from 'react';
 import './edit.css';
+import Select from 'react-select';
 
 export default function Wrklctn() {
   const [name, setName] = useState('');
-  const [bayOwner, setBayOwner] = useState('');
   const [bayType, setBayType] = useState('');
-  const [bayOwnerEmail, setBayOwnerEmail] = useState('');
   const [locations, setLocations] = useState([]);
   const [editingId, setEditingId] = useState(null);
+  const [users, setUsers] = useState([]);
+  const [selectedUser, setSelectedUser] = useState(null); // State to store the selected user
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/wrklctns')
-      .then(response => response.json())
-      .then(data => setLocations(data))
-      .catch(error => console.error('Error fetching locations:', error));
+    fetchLocations();
+    fetchUsers();
   }, []);
 
-  const handleSubmit = (event) => {
+  const fetchLocations = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/wrklctns');
+      if (!response.ok) {
+        throw new Error('Failed to fetch locations');
+      }
+      const locationData = await response.json();
+
+      // Fetch user details for each location's UserID
+      const locationsWithUser = await Promise.all(
+        locationData.map(async location => {
+          if (location.UserID) {
+            const userResponse = await fetch(`http://localhost:5000/api/auth/${location.UserID}`);
+            if (userResponse.ok) {
+              const userData = await userResponse.json();
+              location.appointedUser = userData;
+              console.log(location.appointedUser[0].name);
+            }
+            console.log(location.UserID);
+          }
+          return location;
+         
+        })
+      );
+
+      setLocations(locationsWithUser);
+    } catch (error) {
+      console.error('Error fetching locations:', error);
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const token = localStorage.getItem('jwt');
+      if (!token) {
+        throw new Error('JWT token not found');
+      }
+
+      const response = await fetch('http://localhost:5000/api/auth', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch users');
+      }
+
+      const userData = await response.json();
+
+      const userOptions = userData.map(user => ({
+        value: user.id,
+        label: `${user.name} (${user.email})`
+      }));
+
+      setUsers(userOptions);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  };
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
     const method = editingId ? 'PUT' : 'POST';
     const url = editingId ? `http://localhost:5000/api/wrklctns/${editingId}` : 'http://localhost:5000/api/wrklctns';
     
+    const requestBody = {
+      name,
+      bayType,
+      UserID: selectedUser ? selectedUser.value : null // Check if selectedUser is not null before accessing its value
+    };
+
     fetch(url, {
       method,
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ name, bayOwner, bayType, bayOwnerEmail }),
+      body: JSON.stringify(requestBody),
     })
-      .then(response => response.json())
-      .then(data => {
-        if (editingId) {
-          setLocations(locations.map(loc => loc.id === editingId ? data : loc));
-        } else {
-          setLocations([...locations, data]);
-        }
-        setName('');
-        setBayOwner('');
-        setBayType('');
-        setBayOwnerEmail('');
-        setEditingId(null);
-      })
-      .catch(error => console.error('Error:', error));
+    .then(response => response.json())
+    .then(data => {
+      if (editingId) {
+        setLocations(locations.map(loc => loc.id === editingId ? data : loc));
+      } else {
+        setLocations([...locations, data]);
+      }
+      setName('');
+      setBayType('');
+      setSelectedUser(null); // Reset selected user after submission
+      setEditingId(null);
+    })
+    .catch(error => console.error('Error:', error));
   };
 
   const handleEdit = (id) => {
     const location = locations.find(loc => loc.id === id);
     setName(location.name);
-    setBayOwner(location.bayOwner);
     setBayType(location.bayType);
-    setBayOwnerEmail(location.bayOwnerEmail);
     setEditingId(id);
   };
 
@@ -57,10 +120,14 @@ export default function Wrklctn() {
     fetch(`http://localhost:5000/api/wrklctns/${id}`, {
       method: 'DELETE',
     })
-      .then(() => {
-        setLocations(locations.filter(loc => loc.id !== id));
-      })
-      .catch(error => console.error('Error:', error));
+    .then(() => {
+      setLocations(locations.filter(loc => loc.id !== id));
+    })
+    .catch(error => console.error('Error:', error));
+  };
+
+  const handleUserSelect = (selectedUser) => {
+    setSelectedUser(selectedUser);
   };
 
   return (
@@ -73,19 +140,15 @@ export default function Wrklctn() {
             onChange={(e) => setName(e.target.value)}
           />
           <input 
-            placeholder='Bay Owner' 
-            value={bayOwner} 
-            onChange={(e) => setBayOwner(e.target.value)}
-          />
-          <input 
             placeholder='Bay Type' 
             value={bayType} 
             onChange={(e) => setBayType(e.target.value)}
           />
-          <input 
-            placeholder='Bay Owner Email' 
-            value={bayOwnerEmail} 
-            onChange={(e) => setBayOwnerEmail(e.target.value)}
+          <Select
+            options={users}
+            onChange={handleUserSelect}
+            placeholder="Select a user..."
+            isSearchable
           />
         </div>
         <div className='sub'>
@@ -98,9 +161,8 @@ export default function Wrklctn() {
           <tr>
             <th>Number</th>
             <th>Name</th>
-            <th>Bay Owner</th>
             <th>Bay Type</th>
-            <th>Bay Owner Email</th>
+            <th>Appointed User</th>
             <th>Action</th>
           </tr>
         </thead>
@@ -109,9 +171,8 @@ export default function Wrklctn() {
             <tr key={location.id}>
               <td>{index + 1}</td>
               <td>{location.name}</td>
-              <td>{location.bayOwner}</td>
               <td>{location.bayType}</td>
-              <td>{location.bayOwnerEmail}</td>
+              <td>{location.appointedUser[0] ? `${location.appointedUser[0].name} (${location.appointedUser[0].email})` : 'N/A'}</td>
               <td>
                 <button onClick={() => handleEdit(location.id)}>Edit</button>
                 <button onClick={() => handleDelete(location.id)}>Delete</button>

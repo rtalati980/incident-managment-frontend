@@ -4,15 +4,15 @@ import {jwtDecode} from 'jwt-decode';
 
 export default function IncidentForm() {
   const [locations, setLocations] = useState([]);
+  const [selectedLocationDetails, setSelectedLocationDetails] = useState(null);
   const [types, setTypes] = useState([]);
-  const [statuses, setStatuses] = useState([]);
   const [categories, setCategories] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
   const [users, setUsers] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
   const [incidentNumber, setIncidentNumber] = useState('');
   const [isPopupVisible, setIsPopupVisible] = useState(false);
-  const [assignments, setAssignments] = useState([{ id: Date.now(), selectedUsers: [] }]);
+  const [assignments, setAssignments] = useState([{ id: Date.now(), selectedUsers: [], defaultUser: null }]);
   const [files, setFiles] = useState([{ id: Date.now(), file: null }]);
 
   useEffect(() => {
@@ -81,26 +81,34 @@ export default function IncidentForm() {
     }
 
     const formData = new FormData(event.target);
-    const formDataObject = {};
-    formData.forEach((value, key) => {
-      formDataObject[key] = value;
+
+    // Add files to formData
+    files.forEach((fileObj, index) => {
+      if (fileObj.file) {
+        formData.append(`file${index}`, fileObj.file, fileObj.file.name);
+      }
     });
 
-    // Convert assignedUsers to an array of integers
+    // Convert assignedUsers to an array of integers and add to formData
     const assignedUsersArray = assignments.map(assignment => assignment.selectedUsers.map(Number));
-    formDataObject.assignedUsers = assignedUsersArray.flat();
+    formData.append('assignedUsers', JSON.stringify(assignedUsersArray.flat()));
 
-    formDataObject.userId = userId;
+    formData.append('userId', userId);
+
+    console.log('Form Data:', formData);
+    console.log('Assigned Users:', assignedUsersArray.flat());
 
     try {
       const response = await fetch('http://localhost:5000/api/incidents', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(formDataObject)
+        
+        body: formData
       });
+
+    
 
       if (!response.ok) {
         throw new Error('Failed to submit form');
@@ -123,7 +131,7 @@ export default function IncidentForm() {
   };
 
   const addAssignment = () => {
-    setAssignments([...assignments, { id: Date.now(), selectedUsers: [] }]);
+    setAssignments([...assignments, { id: Date.now(), selectedUsers: [], defaultUser: null }]);
   };
 
   const removeAssignment = (id) => {
@@ -136,8 +144,6 @@ export default function IncidentForm() {
       assignment.id === id ? { ...assignment, selectedUsers: selectedValues } : assignment
     ));
   };
-
-  
 
   const handleFileChange = (id, file) => {
     setFiles(files.map(fileObj =>
@@ -153,21 +159,43 @@ export default function IncidentForm() {
     setFiles(files.filter(fileObj => fileObj.id !== id));
   };
 
+  const fetchLocationDetails = (locationId) => {
+    fetch(`http://localhost:5000/api/wrklctns/${locationId}`)
+      .then(response => response.json())
+      .then(data => {
+        console.log("Fetched location details: ", data); // Debug: Log the fetched data
+        setSelectedLocationDetails(data);
+        setAssignments(prevAssignments =>
+          prevAssignments.map(assignment =>
+            assignment.defaultUser === null
+              ? { ...assignment, defaultUser: data.UserID, selectedUsers: [...assignment.selectedUsers, data.UserID] }
+              : assignment
+          )
+        );
+      })
+      .catch(error => console.error('Error fetching location details:', error));
+  };
+
+  const handleLocationChange = (event) => {
+    const locationId = event.target.value;
+    fetchLocationDetails(locationId);
+  };
+
   return (
     <div className='incident-form-container'>
       <form onSubmit={handleSubmit}>
         <div className='form-row'>
           <div className='form-group'>
             <label>Bay:</label>
-            <select name="workLocation">
+            <select name="workLocation" onChange={handleLocationChange}>
               <option value="">select</option>
               {locations.map(location => (
-                <option key={location.id} value={location.name}>{location.name}</option>
+                <option key={location.id} value={location.id}>{location.name}</option>
               ))}
             </select>
           </div>
           <div className='form-group'>
-            <label>Type:</label>
+            <label>Observation Type:</label>
             <select name="type">
               <option value="">select</option>
               {types.map(type => (
@@ -176,7 +204,7 @@ export default function IncidentForm() {
             </select>
           </div>
           <div className='form-group'>
-            <label>Category:</label>
+            <label>Observation Category:</label>
             <select name='category'>
               <option value="">select</option>
               {categories.map(category => (
@@ -184,13 +212,21 @@ export default function IncidentForm() {
               ))}
             </select>
           </div>
+          <div>
+            {selectedLocationDetails && (
+              <div>
+                <p>Bay Owner: {selectedLocationDetails.bayOwner}</p>
+                <p>Bay Type: {selectedLocationDetails.bayType}</p>
+              </div>
+            )}
+          </div>
           <div className='form-group'>
-            <label>Sub Category:</label>
+            <label>Observation Sub Category:</label>
             <select name='subcategory'>
               <option value="">select</option>
-           {/*   {subcategories.map(subcategory => (
+              {subcategories.map(subcategory => (
                 <option key={subcategory.id} value={subcategory.name}>{subcategory.name}</option>
-              ))} */}
+              ))}
             </select>
           </div>
         </div>
@@ -215,10 +251,13 @@ export default function IncidentForm() {
               <div key={assignment.id} className="assignment">
                 <select
                   name="assignedUsers"
+                  
                   onChange={(e) => handleUserChange(assignment.id, e.target.selectedOptions)}
                 >
                   {users.map(user => (
-                    <option key={user.id} value={user.id}>{user.id}</option>
+                    <option key={user.id} value={user.id} selected={assignment.selectedUsers.includes(user.id)}>
+                      {user.id}
+                    </option>
                   ))}
                 </select>
                 <button type="button" onClick={addAssignment}>+</button>
@@ -246,7 +285,7 @@ export default function IncidentForm() {
             ))}
           </div>
         </div>
-       
+
         <div style={{ textAlign: 'center' }}>
           <button type="submit">Submit</button>
         </div>

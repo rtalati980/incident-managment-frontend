@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './incidentRepo.css'; // Import the CSS file
+import { Link } from 'react-router-dom';
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
@@ -7,14 +8,9 @@ export default function IncidentRepo() {
   const [incidents, setIncidents] = useState([]);
   const [filteredIncidents, setFilteredIncidents] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [isArrowUp, setIsArrowUp] = useState(true);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-
-  const toggleArrow = () => {
-    setIsArrowUp(!isArrowUp);
-    setIsMenuOpen(!isMenuOpen); // Toggle the arrow state
-  };
+  const [statusFilter, setStatusFilter] = useState('');
+  const [openPanels, setOpenPanels] = useState({});
+  
   // Function to fetch incident data
   const fetchData = async () => {
     try {
@@ -34,8 +30,39 @@ export default function IncidentRepo() {
       }
 
       const data = await response.json();
-      setIncidents(data); // Update the state with fetched data
+
+      // Update the state with fetched data
+      setIncidents(data);
       setFilteredIncidents(data); // Initially show all incidents
+
+      // Fetch additional data for each incident
+      const updatedData = await Promise.all(data.map(async incident => {
+        // Fetch workLocation data
+        const workLocationResponse = await fetch(`http://localhost:5000/api/workLocations/name/${incident.workLocation}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const workLocationData = await workLocationResponse.json();
+        
+        // Fetch user data
+        const userResponse = await fetch(`http://localhost:5000/api/auth/id/${incident.userId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const userData = await userResponse.json();
+      
+        return {
+          ...incident,
+          workLocationType: workLocationData.type,
+          username: userData.username,
+          email: userData.email
+        };
+      }));
+
+      setIncidents(updatedData);
+      setFilteredIncidents(updatedData);
     } catch (error) {
       console.error('Error fetching incidents:', error);
     }
@@ -50,24 +77,36 @@ export default function IncidentRepo() {
   const handleSearchChange = (e) => {
     const query = e.target.value;
     setSearchQuery(query);
-    if (query === '') {
-      setFilteredIncidents(incidents);
-    } else {
-      const filtered = incidents.filter(incident =>
-        incident.id.toString().includes(query)
-      );
-      setFilteredIncidents(filtered);
+    filterIncidents(query, statusFilter);
+  };
+
+  // Handle status filter change
+  const handleStatusChange = (e) => {
+    const status = e.target.value;
+    setStatusFilter(status);
+    filterIncidents(searchQuery, status);
+  };
+
+  const filterIncidents = (query, status) => {
+    let filtered = incidents;
+
+    if (query) {
+      filtered = filtered.filter(incident => incident.id.toString().includes(query));
     }
+
+    if (status) {
+      filtered = filtered.filter(incident => incident.status === status);
+    }
+
+    setFilteredIncidents(filtered);
   };
 
   // Function to toggle the accordion panels
   const toggleAccordion = (index) => {
-    const panel = document.getElementById(`panel-${index}`);
-    if (panel.style.display === "block") {
-      panel.style.display = "none";
-    } else {
-      panel.style.display = "block";
-    }
+    setOpenPanels(prevOpenPanels => ({
+      ...prevOpenPanels,
+      [index]: !prevOpenPanels[index]
+    }));
   };
 
   return (
@@ -82,57 +121,60 @@ export default function IncidentRepo() {
           onChange={handleSearchChange}
           className="search-input"
         />
+        
+        <select value={statusFilter} onChange={handleStatusChange} className="status-select">
+          <option value="">All Statuses</option>
+          <option value="Open">Open</option>
+          <option value="Close">Closed</option>
+          <option value="in progress">In Progress</option>
+        </select>
 
         {filteredIncidents.map((incident, index) => (
           <div key={incident.id}>
             <button className="accordion" onClick={() => toggleAccordion(index)}>
               {incident.No}: {incident.workLocation} 
-              {isArrowUp ? (
-          <ArrowDropUpIcon onClick={toggleArrow} style={{ color: 'white', marginLeft:'40px', fontSize: '40px', cursor: 'pointer' }} />
-        ) : (
-          <ArrowDropDownIcon onClick={toggleArrow} style={{ color: 'white', marginLeft:'40px', fontSize: '40px', cursor: 'pointer' }} />
-        )}
+              {openPanels[index] ? (
+                <ArrowDropUpIcon style={{ color: 'white', marginLeft:'40px', fontSize: '40px', cursor: 'pointer' }} />
+              ) : (
+                <ArrowDropDownIcon style={{ color: 'white', marginLeft:'40px', fontSize: '40px', cursor: 'pointer' }} />
+              )}
             </button>
-            <div id={`panel-${index}`} className="panel">
-              <table className="incident-table">
-                <tbody>
+            <div id={`panel-${index}`} className="panel" style={{ display: openPanels[index] ? 'block' : 'none' }}>
+              <table className="incident-details-table">
+                <thead>
                   <tr>
                     <th>No.</th>
-                    <td>{incident.No}</td>
-                  </tr>
-                  <tr>
                     <th>Bay</th>
-                    <td>{incident.workLocation}</td>
-                  </tr>
-                  <tr>
                     <th>Observer Description</th>
-                    <td>{incident.observerDescription}</td>
-                  </tr>
-                  <tr>
                     <th>Type</th>
-                    <td>{incident.type}</td>
-                  </tr>
-                  
-                  <tr>
                     <th>Category</th>
-                    <td>{incident.category}</td>
-                  </tr>
-                  <tr>
                     <th>Sub Category</th>
-                    <td>{incident.subcategory}</td>
-                  </tr>
-                  <tr>
                     <th>Status</th>
-                    <td>{incident.status}</td>
-                  </tr>
-                  <tr>
                     <th>Action Taken</th>
-                    <td>{incident.actionTaken}</td>
+                    <th>Work Location Type</th>
+                    <th>Username</th>
+                    <th>Email</th>
                   </tr>
-                  
-                  
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>{incident.No}</td>
+                    <td>{incident.workLocation}</td>
+                    <td>{incident.observerDescription}</td>
+                    <td>{incident.type}</td>
+                    <td>{incident.category}</td>
+                    <td>{incident.subcategory}</td>
+                    <td>{incident.status}</td>
+                    <td>{incident.actionTaken}</td>
+                    <td>{incident.workLocationType}</td>
+                    <td>{incident.username}</td>
+                    <td>{incident.email}</td>
+                  </tr>
                 </tbody>
               </table>
+              <Link to={`/user-panel/incident/id/${incident.id}`} className="track-button">
+                Track
+              </Link>
             </div>
           </div>
         ))}

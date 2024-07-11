@@ -7,6 +7,11 @@ import AddNew from './navBar/AddNew';
 import Dashboard from './navBar/Dashboard';
 import IncidentRepo from './navBar/IncidentRepo';
 import Profile from './navBar/Profile';
+import AssignIncident from './navBar/AssignIncident';
+import IncidentHistory from './navBar/IncidentHistory';
+import IncidentDetail from './navBar/IncidentDetail';
+
+
 
 
 const UserRoutes = ({email}) => {
@@ -18,6 +23,9 @@ const UserRoutes = ({email}) => {
       <Route path="/addNew" element={<AddNew />} />
       <Route path="/incident" element={<IncidentRepo />} />
       <Route path="/profile" element={<Profile />} />
+      <Route path='/assignincdent' element={<AssignIncident />}/>
+      <Route path='/incdentHistory' element ={<IncidentHistory/>}/>
+      <Route path="/incident/id/:id" element={<IncidentDetail/>} />
       </Routes>
     </div>
   );

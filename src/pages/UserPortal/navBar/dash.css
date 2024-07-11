@@ -1,0 +1,23 @@
+.card-cantainer{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+
+   
+}
+
+.card a {
+    display: inline-block;
+    color: inherit; /* Inherit the color from the parent */
+    text-decoration: none; /* Remove underline */
+    transition: color 0.3s ease, transform 0.3s ease, border 0.3s ease; /* Add transition for smooth effect */
+    padding: 2px; /* Add padding to create space for border */
+}
+
+.card a:hover {
+    color:#00457e; /* Change the color on hover */
+    transform: scale(1.05); /* Slightly enlarge on hover */
+    border: 2px solid #00457e; /* Add border on hover */
+    border-radius: 0px; /* Optional: Add border radius for smooth corners */
+}
