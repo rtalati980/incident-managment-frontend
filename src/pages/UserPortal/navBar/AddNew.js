@@ -81,34 +81,29 @@ export default function IncidentForm() {
     }
 
     const formData = new FormData(event.target);
-
-    // Add files to formData
-    files.forEach((fileObj, index) => {
-      if (fileObj.file) {
-        formData.append(`file${index}`, fileObj.file, fileObj.file.name);
-      }
+    const formDataObject = {};
+    formData.forEach((value, key) => {
+      formDataObject[key] = value;
     });
 
-    // Convert assignedUsers to an array of integers and add to formData
+    // Convert assignedUsers to an array of integers
     const assignedUsersArray = assignments.map(assignment => assignment.selectedUsers.map(Number));
-    formData.append('assignedUsers', JSON.stringify(assignedUsersArray.flat()));
+    formDataObject.assignedUsers = assignedUsersArray.flat();
 
-    formData.append('userId', userId);
+    formDataObject.userId = userId;
 
-    console.log('Form Data:', formData);
-    console.log('Assigned Users:', assignedUsersArray.flat());
+    console.log('Form Data:', formDataObject);
+    console.log('Assigned Users:', formDataObject.assignedUsers);
 
     try {
       const response = await fetch('http://localhost:5000/api/incidents', {
         method: 'POST',
         headers: {
+          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        
-        body: formData
+        body: JSON.stringify(formDataObject)
       });
-
-    
 
       if (!response.ok) {
         throw new Error('Failed to submit form');

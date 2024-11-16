@@ -1,14 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, NavLink } from 'react-router-dom';
-import logo from '../../../../png/knor.PNG';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { AppBar, Toolbar, Typography, Tabs, Tab, IconButton, Menu, MenuItem } from '@mui/material';
 import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
-import './header.css'; 
-import {jwtDecode} from 'jwt-decode';
+import MenuIcon from '@mui/icons-material/Menu';
+import AccountCircle from '@mui/icons-material/AccountCircle';
+import { jwtDecode } from 'jwt-decode';
 
 export default function Header() {
   const [userName, setUserName] = useState('');
-  const[role,setRole]=useState('');
+  const [role, setRole] = useState('');
+  const [tabValue, setTabValue] = useState(0);
+  const [anchorEl, setAnchorEl] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const fetchUserData = async (userId) => {
@@ -16,7 +20,6 @@ export default function Header() {
         const response = await fetch(`http://localhost:5000/api/auth/${userId}`);
         const data = await response.json();
         setUserName(data[0].name);
-        console.log(data[0].name);
       } catch (error) {
         console.error('Error fetching user data:', error);
       }
@@ -40,55 +43,100 @@ export default function Header() {
     fetchData();
   }, []);
 
+  // Set active tab based on the current route
+  useEffect(() => {
+    const pathToTabIndex = {
+      '/user-panel/': 0,
+      '/user-panel/addNew': 1,
+      '/user-panel/incident': 2,
+      '/user-panel/profile': 3,
+      '/user-panel/assignincdent': 4,
+    };
+    setTabValue(pathToTabIndex[location.pathname] || 0);
+  }, [location.pathname]);
+
+  const handleTabChange = (event, newValue) => {
+    setTabValue(newValue);
+    const tabIndexToPath = [
+      '/user-panel/',
+      '/user-panel/addNew',
+      '/user-panel/incident',
+      '/user-panel/profile',
+      '/user-panel/assignincdent',
+    ];
+    navigate(tabIndexToPath[newValue]);
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('jwt');
     navigate('/login');
   };
 
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
   return (
-    <div className="header-container">
-      <div className="header-top">
-        <img className="logo-img" src={logo} alt="logo" />
-        <div className="user-info">
-          <span className="user-name">{role}-{userName}</span>
-          <PowerSettingsNewIcon className="logout-icon" onClick={handleLogout} />
-        </div>
-      </div>
-      <div className="nav-bar">
-        <nav className="nav-links">
-          <NavLink
-            to="/user-panel/"
-            className={({ isActive }) => (isActive ? 'nav-link nav-link-active' : 'nav-link')}
-            end
-          >
-            DASHBOARD
-          </NavLink>
-          <NavLink
-            to="/user-panel/addNew"
-            className={({ isActive }) => (isActive ? 'nav-link nav-link-active' : 'nav-link')}
-          >
-            REPORT INCIDENT
-          </NavLink>
-          <NavLink
-            to="/user-panel/incident"
-            className={({ isActive }) => (isActive ? 'nav-link nav-link-active' : 'nav-link')}
-          >
-            INCIDENT HISTORY
-          </NavLink>
-          <NavLink
-            to="/user-panel/profile"
-            className={({ isActive }) => (isActive ? 'nav-link nav-link-active' : 'nav-link')}
-          >
-            PROFILE
-          </NavLink>
-          <NavLink
-            to="/user-panel/assignincdent"
-            className={({ isActive }) => (isActive ? 'nav-link nav-link-active' : 'nav-link')}
-          >
-            ASSIGN INCIDENT
-          </NavLink>
-        </nav>
-      </div>
-    </div>
+    <AppBar position="static" style={{ backgroundColor: '#fff', boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)' }}>
+      <Toolbar>
+        {/* Logo or Title */}
+        <Typography variant="h6" sx={{ flexGrow: 1, color: '#333' }}>
+          User Panel
+        </Typography>
+
+        {/* User Info */}
+        <Typography variant="body1" sx={{ marginRight: 2, color: '#333' }}>
+          {role} - {userName}
+        </Typography>
+
+        {/* Account Icon with Menu */}
+        <IconButton
+          size="large"
+          edge="end"
+          color="inherit"
+          aria-label="account of current user"
+          onClick={handleMenuOpen}
+        >
+          <AccountCircle />
+        </IconButton>
+        <Menu
+          id="account-menu"
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={handleMenuClose}
+          anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+        >
+          <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
+          <MenuItem onClick={handleLogout}>Logout</MenuItem>
+        </Menu>
+      </Toolbar>
+
+      {/* Navigation Tabs */}
+      <Tabs
+        value={tabValue}
+        onChange={handleTabChange}
+        aria-label="User Panel Navigation"
+        textColor="inherit"
+        indicatorColor="primary"
+        variant="scrollable"
+      >
+        <Tab label="DASHBOARD" />
+        <Tab label="REPORT INCIDENT" />
+        <Tab label="INCIDENT HISTORY" />
+        <Tab label="PROFILE" />
+        <Tab label="ASSIGN INCIDENT" />
+      </Tabs>
+    </AppBar>
   );
 }

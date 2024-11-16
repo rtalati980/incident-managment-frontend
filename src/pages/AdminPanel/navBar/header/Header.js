@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
-import logo from '../../../../png/knor.PNG';
+
 import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
-import './header.css'; 
+
 import {jwtDecode} from 'jwt-decode';
 
 export default function Header() {
@@ -48,7 +48,7 @@ export default function Header() {
   return (
     <div className="header-container">
       <div className="header-top">
-        <img className="logo-img" src={logo} alt="logo" />
+       
         <div className="user-info">
           <span className="user-name">{role}-{userName}</span>
           <PowerSettingsNewIcon className="logout-icon" onClick={handleLogout} />
@@ -57,35 +57,53 @@ export default function Header() {
       <div className="nav-bar">
         <nav className="nav-links">
           <NavLink
-            to="/user-panel/"
+            to="/admin-panel/"
             className={({ isActive }) => (isActive ? 'nav-link nav-link-active' : 'nav-link')}
             end
           >
             DASHBOARD
           </NavLink>
           <NavLink
-            to="/user-panel/addNew"
+            to="/admin-panel/wrklctn"
             className={({ isActive }) => (isActive ? 'nav-link nav-link-active' : 'nav-link')}
           >
-            REPORT INCIDENT
+            BAY
           </NavLink>
           <NavLink
-            to="/user-panel/incident"
+            to="/admin-panel/typeAdd"
             className={({ isActive }) => (isActive ? 'nav-link nav-link-active' : 'nav-link')}
           >
-            INCIDENT HISTORY
+            INCIDENT TYPE
           </NavLink>
           <NavLink
-            to="/user-panel/profile"
+            to="/admin-panel/manageEntities"
+            className={({ isActive }) => (isActive ? 'nav-link nav-link-active' : 'nav-link')}
+          >
+           CATEGORY
+          </NavLink>
+          <NavLink
+            to="/admin-panel/manageSatus"
+            className={({ isActive }) => (isActive ? 'nav-link nav-link-active' : 'nav-link')}
+          >
+            STATUS
+          </NavLink>
+          <NavLink
+            to="/admin-panel/inciReports"
+            className={({ isActive }) => (isActive ? 'nav-link nav-link-active' : 'nav-link')}
+          >
+            REPORTED INCIDENT
+          </NavLink>
+          <NavLink
+            to="/admin-panel/profile"
             className={({ isActive }) => (isActive ? 'nav-link nav-link-active' : 'nav-link')}
           >
             PROFILE
           </NavLink>
           <NavLink
-            to="/user-panel/assignincdent"
+            to="/admin-panel/user"
             className={({ isActive }) => (isActive ? 'nav-link nav-link-active' : 'nav-link')}
           >
-            ASSIGN INCIDENT
+           USERS
           </NavLink>
         </nav>
       </div>

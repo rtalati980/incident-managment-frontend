@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {jwtDecode} from 'jwt-decode'; // Correct import statement
 import './login.css';
-import logo from '../../png/knor.PNG'
+
 
 const Login = ({ onLogin }) => {
   const [loginData, setLoginData] = useState({ email: '', password: '' });
@@ -49,7 +49,7 @@ const Login = ({ onLogin }) => {
 
   return (
     <div className='container'>
-        <img  style={{width:'400px'}} src={logo} alt='logo'/>
+       
       <div className="login-container">
         <h1>Login</h1>
         <form id="loginForm" onSubmit={handleLoginSubmit}>
