@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { TextField, Button, Select, MenuItem, FormControl, InputLabel, Accordion, AccordionSummary, AccordionDetails, Table, TableBody, TableCell, TableHead, TableRow, Typography } from '@mui/material';
+import { ExpandMore } from '@mui/icons-material';
+import * as XLSX from 'xlsx';
 import '../../UserPortal/navBar/incidentRepo.css'; // Import the CSS file
 
 export default function IncidentRepo() {
@@ -56,24 +59,11 @@ export default function IncidentRepo() {
   };
 
   // Function to toggle the accordion panels
-  const toggleAccordion = (index) => {
-    const panel = document.getElementById(`panel-${index}`);
-    if (panel.style.display === "block") {
-      panel.style.display = "none";
-    } else {
-      panel.style.display = "block";
-    }
+  const handleAccordionChange = (incidentId) => {
+    setSelectedIncident(selectedIncident === incidentId ? null : incidentId);
   };
 
-  // Function to handle action button click
-  const handleActionClick = (incident) => {
-    setSelectedIncident(incident);
-    // Reset assignee and comment when a new incident is selected
-    setAssignee('');
-    setComment('');
-  };
-
-  // Function to handle form submission
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -82,8 +72,7 @@ export default function IncidentRepo() {
         throw new Error('JWT token not found');
       }
 
-      // Send a request to update the incident
-      const response = await fetch(`http://localhost:5000/api/incidents/${selectedIncident.id}`, {
+      const response = await fetch(`http://localhost:5000/api/incidents/${selectedIncident}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -100,116 +89,125 @@ export default function IncidentRepo() {
         throw new Error('Failed to update incident');
       }
 
-      // Refresh incident data
-      fetchData();
+      fetchData(); // Refresh incident data
     } catch (error) {
       console.error('Error updating incident:', error);
     }
   };
 
+  // Export incidents to Excel
+  const exportToExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(filteredIncidents);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Incidents');
+    XLSX.writeFile(workbook, 'incident_reports.xlsx');
+  };
+
   return (
-    <div>
-      <div className="incident-container">
-        <h2>INCIDENT REPORTS</h2>
-        
-        <input
-          type="text"
-          placeholder="Search by Ticket No."
-          value={searchQuery}
-          onChange={handleSearchChange}
-          className="search-input"
-        />
+    <div className="incident-container">
+      <Typography variant="h4" gutterBottom>Incident Reports</Typography>
 
-        {filteredIncidents.map((incident, index) => (
-          <div key={incident.id}>
-            <button className="accordion" onClick={() => toggleAccordion(index)}>
-              {incident.No}: {incident.workLocation} 
-            </button>
-            <div id={`panel-${index}`} className="panel">
-              <table className="incident-table">
-                <tbody>
-                  <tr>
-                    <th>No.</th>
-                    <td>{index + 1}</td>
-                  </tr>
-                  <tr>
-                    <th>Work Location</th>
-                    <td>{incident.workLocation}</td>
-                  </tr>
-                  <tr>
-                    <th>Observer Description</th>
-                    <td>{incident.observerDescription}</td>
-                  </tr>
-                  <tr>
-                    <th>Type</th>
-                    <td>{incident.type}</td>
-                  </tr>
-                  <tr>
-                    <th>Occurrence</th>
-                    <td>{incident.occurence}</td>
-                  </tr>
-                  <tr>
-                    <th>Severity</th>
-                    <td>{incident.severity}</td>
-                  </tr>
-                  <tr>
-                    <th>Category</th>
-                    <td>{incident.category}</td>
-                  </tr>
-                  <tr>
-                    <th>Sub Category</th>
-                    <td>{incident.subcategory}</td>
-                  </tr>
-                  <tr>
-                    <th>Status</th>
-                    <td>{incident.status}</td>
-                  </tr>
-                  <tr>
-                    <th>Action Taken</th>
-                    <td>{incident.actionTaken}</td>
-                  </tr>
-                  <tr>
-                    <th>Consequences Discussion</th>
-                    <td>{incident.consequencesDiscussion}</td>
-                  </tr>
-                  <tr>
-                    <th>Behavior</th>
-                    <td>{incident.behavior}</td>
-                  </tr>
-                </tbody>
-              </table>
+      <TextField
+        label="Search by Ticket No."
+        value={searchQuery}
+        onChange={handleSearchChange}
+        variant="outlined"
+        fullWidth
+        margin="normal"
+      />
 
-              {/* Action form */}
-              {selectedIncident === incident && (
-                <form onSubmit={handleSubmit}>
-                  <label>Status:</label>
-                  <select value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)}>
-                    <option value="Resolved">Resolved</option>
-                    <option value="In Progress">In Progress</option>
-                    <option value="Closed">Closed</option>
-                  </select>
+      {/* Filter Option for Status */}
+      <FormControl fullWidth margin="normal">
+        <InputLabel>Status</InputLabel>
+        <Select
+          value={selectedStatus}
+          onChange={(e) => setSelectedStatus(e.target.value)}
+          label="Status"
+        >
+          <MenuItem value="Resolved">Resolved</MenuItem>
+          <MenuItem value="In Progress">In Progress</MenuItem>
+          <MenuItem value="Closed">Closed</MenuItem>
+        </Select>
+      </FormControl>
 
-                  <label>Assignee:</label>
-                  <input
-                    type="text"
-                    value={assignee}
-                    onChange={(e) => setAssignee(e.target.value)}
-                  />
+      {/* Export Button */}
+      <Button variant="contained" color="primary" onClick={exportToExcel}>
+        Export to Excel
+      </Button>
 
-                  <label>Comment:</label>
-                  <textarea
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                  />
+      {filteredIncidents.map((incident, index) => (
+        <Accordion key={incident.id} expanded={selectedIncident === incident.id} onChange={() => handleAccordionChange(incident.id)}>
+          <AccordionSummary expandIcon={<ExpandMore />} aria-controls={`panel-${incident.id}`} id={`header-${incident.id}`}>
+            <Typography>{incident.No}: {incident.workLocation}</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell><strong>No.</strong></TableCell>
+                  <TableCell><strong>Work Location</strong></TableCell>
+                  <TableCell><strong>Severity</strong></TableCell>
+                  <TableCell><strong>Status</strong></TableCell>
+                  <TableCell><strong>Action Taken</strong></TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                <TableRow>
+                  <TableCell>{incident.No}</TableCell>
+                  <TableCell>{incident.workLocation}</TableCell>
+                  <TableCell>{incident.severity}</TableCell>
+                  <TableCell>{incident.status}</TableCell>
+                  <TableCell>{incident.actionTaken}</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
 
-                  <button type="submit">Submit</button>
-                </form>
-              )}
-              <button onClick={() => handleActionClick(incident)}>Action</button>
-            </div>
-          </div>
-        ))}
-      </div>
+            {/* Action Form */}
+            {selectedIncident === incident.id && (
+              <form onSubmit={handleSubmit}>
+                <Typography variant="h6">Update Incident</Typography>
+
+                <FormControl fullWidth margin="normal">
+                  <InputLabel>Status</InputLabel>
+                  <Select
+                    value={selectedStatus}
+                    onChange={(e) => setSelectedStatus(e.target.value)}
+                    label="Status"
+                  >
+                    <MenuItem value="Resolved">Resolved</MenuItem>
+                    <MenuItem value="In Progress">In Progress</MenuItem>
+                    <MenuItem value="Closed">Closed</MenuItem>
+                  </Select>
+                </FormControl>
+
+                <TextField
+                  label="Assignee"
+                  value={assignee}
+                  onChange={(e) => setAssignee(e.target.value)}
+                  variant="outlined"
+                  fullWidth
+                  margin="normal"
+                />
+
+                <TextField
+                  label="Comment"
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  variant="outlined"
+                  fullWidth
+                  multiline
+                  rows={4}
+                  margin="normal"
+                />
+
+                <Button type="submit" variant="contained" color="primary" fullWidth>
+                  Submit
+                </Button>
+              </form>
+            )}
+          </AccordionDetails>
+        </Accordion>
+      ))}
     </div>
   );
 }

@@ -3,9 +3,23 @@ body {
   font-family:Noto Sans Semi Condensed,Noto Sans JP,Noto Sans KR,Noto Sans SC,Noto Sans Semi Condensed Fallback,sans-serif!important;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: #e2e2e2;
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+
+.MuiTabs-root .MuiTab-root {
+  color: blue; /* Base color */
+}
+
+.MuiTabs-root .MuiTab-root:hover {
+  color: white; /* Hover color */
+}
+
+.MuiTabs-root .Mui-selected {
+  color: blue; /* Active tab color */
 }

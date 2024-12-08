@@ -4,7 +4,10 @@ import { AppBar, Toolbar, Typography, Tabs, Tab, IconButton, Menu, MenuItem } fr
 import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
 import MenuIcon from '@mui/icons-material/Menu';
 import AccountCircle from '@mui/icons-material/AccountCircle';
+import NotificationsNoneRoundedIcon from '@mui/icons-material/NotificationsNoneRounded';
 import { jwtDecode } from 'jwt-decode';
+import logoImg  from '../../../../png/knor.PNG';
+
 
 export default function Header() {
   const [userName, setUserName] = useState('');
@@ -81,15 +84,16 @@ export default function Header() {
   };
 
   return (
-    <AppBar position="static" style={{ backgroundColor: '#fff', boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)' }}>
+    <AppBar position="static" style={{ backgroundColor: '#e2e2e2', color:"#5b5b5b"  }}>
       <Toolbar>
         {/* Logo or Title */}
-        <Typography variant="h6" sx={{ flexGrow: 1, color: '#333' }}>
-          User Panel
+
+        <img src={logoImg} alt='asdf'  style={{width:'280px'}}/> 
+        <Typography variant="h6" sx={{ flexGrow: 1, color: '#5b5b5b' }}>
         </Typography>
 
         {/* User Info */}
-        <Typography variant="body1" sx={{ marginRight: 2, color: '#333' }}>
+        <Typography variant="body1" sx={{ marginRight: 2, color: '#5b5b5b' }}>
           {role} - {userName}
         </Typography>
 
@@ -101,8 +105,11 @@ export default function Header() {
           aria-label="account of current user"
           onClick={handleMenuOpen}
         >
-          <AccountCircle />
+          <AccountCircle  sx={{color:"#5b5b5b"}}/>
+         
         </IconButton>
+
+        <NotificationsNoneRoundedIcon sx={{ color: '#5b5b5b' }} />
         <Menu
           id="account-menu"
           anchorEl={anchorEl}
@@ -130,7 +137,9 @@ export default function Header() {
         textColor="inherit"
         indicatorColor="primary"
         variant="scrollable"
+        sx={{color:"blue"}}
       >
+      
         <Tab label="DASHBOARD" />
         <Tab label="REPORT INCIDENT" />
         <Tab label="INCIDENT HISTORY" />
@@ -140,3 +149,4 @@ export default function Header() {
     </AppBar>
   );
 }
+

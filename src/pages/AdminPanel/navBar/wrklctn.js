@@ -1,5 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import './edit.css';
+import {
+  TextField,
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Box,
+  Typography,
+} from '@mui/material';
 import Select from 'react-select';
 
 export default function Wrklctn() {
@@ -8,7 +20,7 @@ export default function Wrklctn() {
   const [locations, setLocations] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [users, setUsers] = useState([]);
-  const [selectedUser, setSelectedUser] = useState(null); // State to store the selected user
+  const [selectedUser, setSelectedUser] = useState(null);
 
   useEffect(() => {
     fetchLocations();
@@ -18,28 +30,23 @@ export default function Wrklctn() {
   const fetchLocations = async () => {
     try {
       const response = await fetch('http://localhost:5000/api/wrklctns');
-      if (!response.ok) {
-        throw new Error('Failed to fetch locations');
-      }
+      if (!response.ok) throw new Error('Failed to fetch locations');
       const locationData = await response.json();
 
-      // Fetch user details for each location's UserID
       const locationsWithUser = await Promise.all(
-        locationData.map(async location => {
+        locationData.map(async (location) => {
           if (location.UserID) {
-            const userResponse = await fetch(`http://localhost:5000/api/auth/${location.UserID}`);
+            const userResponse = await fetch(
+              `http://localhost:5000/api/auth/${location.UserID}`
+            );
             if (userResponse.ok) {
               const userData = await userResponse.json();
               location.appointedUser = userData;
-              console.log(location.appointedUser[0].name);
             }
-            console.log(location.UserID);
           }
           return location;
-         
         })
       );
-
       setLocations(locationsWithUser);
     } catch (error) {
       console.error('Error fetching locations:', error);
@@ -49,25 +56,21 @@ export default function Wrklctn() {
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem('jwt');
-      if (!token) {
-        throw new Error('JWT token not found');
-      }
+      if (!token) throw new Error('JWT token not found');
 
       const response = await fetch('http://localhost:5000/api/auth', {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch users');
-      }
+      if (!response.ok) throw new Error('Failed to fetch users');
 
       const userData = await response.json();
 
-      const userOptions = userData.map(user => ({
+      const userOptions = userData.map((user) => ({
         value: user.id,
-        label: `${user.name} (${user.email})`
+        label: `${user.name} (${user.email})`,
       }));
 
       setUsers(userOptions);
@@ -79,51 +82,61 @@ export default function Wrklctn() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     const method = editingId ? 'PUT' : 'POST';
-    const url = editingId ? `http://localhost:5000/api/wrklctns/${editingId}` : 'http://localhost:5000/api/wrklctns';
-    
+    const url = editingId
+      ? `http://localhost:5000/api/wrklctns/${editingId}`
+      : 'http://localhost:5000/api/wrklctns';
+
     const requestBody = {
       name,
       bayType,
-      UserID: selectedUser ? selectedUser.value : null // Check if selectedUser is not null before accessing its value
+      UserID: selectedUser ? selectedUser.value : null,
     };
 
-    fetch(url, {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestBody),
-    })
-    .then(response => response.json())
-    .then(data => {
+    try {
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      const data = await response.json();
       if (editingId) {
-        setLocations(locations.map(loc => loc.id === editingId ? data : loc));
+        setLocations((prevLocations) =>
+          prevLocations.map((loc) => (loc.id === editingId ? data : loc))
+        );
       } else {
-        setLocations([...locations, data]);
+        setLocations((prevLocations) => [...prevLocations, data]);
       }
+
       setName('');
       setBayType('');
-      setSelectedUser(null); // Reset selected user after submission
+      setSelectedUser(null);
       setEditingId(null);
-    })
-    .catch(error => console.error('Error:', error));
+    } catch (error) {
+      console.error('Error:', error);
+    }
   };
 
   const handleEdit = (id) => {
-    const location = locations.find(loc => loc.id === id);
+    const location = locations.find((loc) => loc.id === id);
     setName(location.name);
     setBayType(location.bayType);
     setEditingId(id);
   };
 
-  const handleDelete = (id) => {
-    fetch(`http://localhost:5000/api/wrklctns/${id}`, {
-      method: 'DELETE',
-    })
-    .then(() => {
-      setLocations(locations.filter(loc => loc.id !== id));
-    })
-    .catch(error => console.error('Error:', error));
+  const handleDelete = async (id) => {
+    try {
+      await fetch(`http://localhost:5000/api/wrklctns/${id}`, {
+        method: 'DELETE',
+      });
+      setLocations((prevLocations) =>
+        prevLocations.filter((loc) => loc.id !== id)
+      );
+    } catch (error) {
+      console.error('Error:', error);
+    }
   };
 
   const handleUserSelect = (selectedUser) => {
@@ -131,56 +144,87 @@ export default function Wrklctn() {
   };
 
   return (
-    <div className='eit'>
-      <form className='add' onSubmit={handleSubmit}>
-        <div className='in'>
-          <input 
-            placeholder='Bay' 
-            value={name} 
-            onChange={(e) => setName(e.target.value)}
-          />
-          <input 
-            placeholder='Bay Type' 
-            value={bayType} 
-            onChange={(e) => setBayType(e.target.value)}
-          />
-          <Select
-            options={users}
-            onChange={handleUserSelect}
-            placeholder="Select a user..."
-            isSearchable
-          />
-        </div>
-        <div className='sub'>
-          <input type='submit' value={editingId ? 'Update' : 'Submit'} />
-        </div>
-      </form>
-      
-      <table className='location-table'>
-        <thead>
-          <tr>
-            <th>Number</th>
-            <th>Name</th>
-            <th>Bay Type</th>
-            <th>Appointed User</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {locations.map((location, index) => (
-            <tr key={location.id}>
-              <td>{index + 1}</td>
-              <td>{location.name}</td>
-              <td>{location.bayType}</td>
-              <td>{location.appointedUser[0] ? `${location.appointedUser[0].name} (${location.appointedUser[0].email})` : 'N/A'}</td>
-              <td>
-                <button onClick={() => handleEdit(location.id)}>Edit</button>
-                <button onClick={() => handleDelete(location.id)}>Delete</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <Box p={3}>
+      <Typography variant="h4" gutterBottom>
+        Manage Locations
+      </Typography>
+
+      <Paper elevation={3} sx={{ padding: 2, marginBottom: 4 }}>
+        <form onSubmit={handleSubmit}>
+          <Box display="flex" gap={2} flexDirection="row" flexWrap="wrap">
+            <TextField
+              label="Bay Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              fullWidth
+            />
+            <TextField
+              label="Bay Type"
+              value={bayType}
+              onChange={(e) => setBayType(e.target.value)}
+              fullWidth
+            />
+            <Box flex={1} minWidth="200px">
+              <Select
+                options={users}
+                onChange={handleUserSelect}
+                placeholder="Select a user"
+                isSearchable
+              />
+            </Box>
+          </Box>
+          <Box mt={2} textAlign="right">
+            <Button type="submit" variant="contained" color="primary">
+              {editingId ? 'Update' : 'Submit'}
+            </Button>
+          </Box>
+        </form>
+      </Paper>
+
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Number</TableCell>
+              <TableCell>Name</TableCell>
+              <TableCell>Bay Type</TableCell>
+              <TableCell>Appointed User</TableCell>
+              <TableCell>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {locations.map((location, index) => (
+              <TableRow key={location.id}>
+                <TableCell>{index + 1}</TableCell>
+                <TableCell>{location.name}</TableCell>
+                <TableCell>{location.bayType}</TableCell>
+                <TableCell>
+                  {location.appointedUser && location.appointedUser[0]
+                    ? `${location.appointedUser[0].name} (${location.appointedUser[0].email})`
+                    : 'N/A'}
+                </TableCell>
+                <TableCell>
+                  <Button
+                    variant="outlined"
+                    color="primary"
+                    onClick={() => handleEdit(location.id)}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    color="secondary"
+                    onClick={() => handleDelete(location.id)}
+                    sx={{ marginLeft: 1 }}
+                  >
+                    Delete
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Box>
   );
 }

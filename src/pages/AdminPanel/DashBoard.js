@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import './dashboard.css';
-import safty from '../../../src/png/safty.png'
+import { Card, CardContent, Typography, Grid, Box } from '@mui/material';
+import { AccessAlarm, CheckCircle, HourglassEmpty } from '@mui/icons-material';
+
 export default function Dashboard() {
   const [incidents, setIncidents] = useState([]);
   const [statusCounts, setStatusCounts] = useState({ open: 0, closed: 0, inProgress: 0 });
@@ -52,22 +53,51 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className="dashboard-container">
-      <div className="card">
-        <h3>INCIDENT REPORTED</h3>
-        <p>Total: {incidents.length}</p>
-        <div className="status-container">
-          <div className="status-item">
-            <h3>STATUS</h3>
-            <p>Open: {statusCounts.open}</p>
-            <p>Closed: {statusCounts.closed}</p>
-            <p>In Progress: {statusCounts.inProgress}</p>
-          </div>
-        </div>
-      </div>
-      <div className='img-cont'>
-    <img src={safty} alt='hs'/>
-   </div>
-    </div>
+    <Box sx={{ padding: 2 }}>
+      <Grid container spacing={3}>
+        {/* Card for total incidents */}
+        <Grid item xs={12} sm={6} md={4}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                INCIDENT REPORTED
+              </Typography>
+              <Typography variant="h4">{incidents.length}</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Card for status counts */}
+        <Grid item xs={12} sm={6} md={4}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                STATUS
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={4}>
+                  <Box display="flex" alignItems="center">
+                    <AccessAlarm sx={{ color: 'orange', marginRight: 1 }} />
+                    <Typography variant="body1">Open: {statusCounts.open}</Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <Box display="flex" alignItems="center">
+                    <CheckCircle sx={{ color: 'green', marginRight: 1 }} />
+                    <Typography variant="body1">Closed: {statusCounts.closed}</Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <Box display="flex" alignItems="center">
+                    <HourglassEmpty sx={{ color: 'yellow', marginRight: 1 }} />
+                    <Typography variant="body1">In Progress: {statusCounts.inProgress}</Typography>
+                  </Box>
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+    </Box>
   );
 }

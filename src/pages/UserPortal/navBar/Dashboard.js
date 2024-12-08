@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { Card, CardContent, Typography, Box, Grid } from '@mui/material';
 import './dash.css';
 
 export default function Dashboard() {
@@ -8,7 +9,6 @@ export default function Dashboard() {
   const [assignedUserIncidents, setAssignedUserIncidents] = useState([]);
   const [assignedUserStatusCounts, setAssignedUserStatusCounts] = useState({ open: 0, closed: 0, inProgress: 0 });
 
-  // Function to fetch incident data
   const fetchData = async () => {
     try {
       const token = localStorage.getItem('jwt');
@@ -18,8 +18,8 @@ export default function Dashboard() {
 
       const response = await fetch('http://localhost:5000/api/incidents/id/getuser', {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (!response.ok) {
@@ -27,14 +27,13 @@ export default function Dashboard() {
       }
 
       const data = await response.json();
-      setIncidents(data); // Update the state with fetched data
-      calculateStatusCounts(data, setStatusCounts); // Calculate status counts
+      setIncidents(data);
+      calculateStatusCounts(data, setStatusCounts);
     } catch (error) {
       console.error('Error fetching incidents:', error);
     }
   };
 
-  // Function to fetch assigned user incident data
   const fetchAssignedUserData = async () => {
     try {
       const token = localStorage.getItem('jwt');
@@ -44,8 +43,8 @@ export default function Dashboard() {
 
       const response = await fetch('http://localhost:5000/api/incidents/assignto/getuser', {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (!response.ok) {
@@ -53,17 +52,16 @@ export default function Dashboard() {
       }
 
       const data = await response.json();
-      setAssignedUserIncidents(data); // Update the state with fetched data
-      calculateStatusCounts(data, setAssignedUserStatusCounts); // Calculate status counts
+      setAssignedUserIncidents(data);
+      calculateStatusCounts(data, setAssignedUserStatusCounts);
     } catch (error) {
       console.error('Error fetching assigned user incidents:', error);
     }
   };
 
-  // Function to calculate status counts
   const calculateStatusCounts = (data, setCounts) => {
     const counts = { open: 0, closed: 0, inProgress: 0 };
-    data.forEach(incident => {
+    data.forEach((incident) => {
       if (incident.status === 'Open') {
         counts.open += 1;
       } else if (incident.status === 'Close') {
@@ -75,51 +73,63 @@ export default function Dashboard() {
     setCounts(counts);
   };
 
-  // Fetch data when the component mounts
   useEffect(() => {
     fetchData();
     fetchAssignedUserData();
   }, []);
 
   return (
-    <div className='crd-cnt'>
-      <h1>DASHBOARD</h1>
-      <div className='card-cantainer'>
-        <div className='card'>
-          <h3>Incident Reported</h3>
-          <Link to={`/user-panel/incident`}>
-          <p>Total: {incidents.length}</p>
-          </Link>
-          <div>
-            <h3>Status</h3>
-            <Link to={`/user-panel/incident?status=Open`}>
-              <p>Open: {statusCounts.open}</p>
-            </Link>
-            <Link to={`/user-panel/incident?status=Close`}>
-              <p>Close: {statusCounts.closed}</p>
-            </Link>
-            <Link to={`/user-panel/incident?status=InProgress`}>
-              <p>In Progress: {statusCounts.inProgress}</p>
-            </Link>
-          </div>
-        </div>
-        <div className='card'>
-          <h3>Assigned User Incidents</h3>
-          <p>Total: {assignedUserIncidents.length}</p>
-          <div>
-            <h3>Status</h3>
-            <Link to={`/incident-history?status=Open`}>
-              <p>Open: {assignedUserStatusCounts.open}</p>
-            </Link>
-            <Link to={`/incident-history?status=Close`}>
-              <p>Close: {assignedUserStatusCounts.closed}</p>
-            </Link>
-            <Link to={`/incident-history?status=InProgress`}>
-              <p>In Progress: {assignedUserStatusCounts.inProgress}</p>
-            </Link>
-          </div>
-        </div>
-      </div>
-    </div>
+    <Box sx={{ p: 4 }}>
+      <Typography variant="h4" gutterBottom>
+        DASHBOARD
+      </Typography>
+      <Grid container spacing={3}>
+        {/* Incident Reported Card */}
+        <Grid item xs={12} sm={6}>
+          <Card variant="outlined">
+            <CardContent>
+              <Typography variant="h6">Incident Reported</Typography>
+              <Link to={`/user-panel/incident`} style={{ textDecoration: 'none' }}>
+                <Typography variant="body1">Total: {incidents.length}</Typography>
+              </Link>
+              <Box mt={2}>
+                <Typography variant="subtitle1">Status</Typography>
+                <Link to={`/user-panel/incident?status=Open`} style={{ textDecoration: 'none' }}>
+                  <Typography variant="body2">Open: {statusCounts.open}</Typography>
+                </Link>
+                <Link to={`/user-panel/incident?status=Close`} style={{ textDecoration: 'none' }}>
+                  <Typography variant="body2">Close: {statusCounts.closed}</Typography>
+                </Link>
+                <Link to={`/user-panel/incident?status=InProgress`} style={{ textDecoration: 'none' }}>
+                  <Typography variant="body2">In Progress: {statusCounts.inProgress}</Typography>
+                </Link>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Assigned User Incidents Card */}
+        <Grid item xs={12} sm={6}>
+          <Card variant="outlined">
+            <CardContent>
+              <Typography variant="h6">Assigned User Incidents</Typography>
+              <Typography variant="body1">Total: {assignedUserIncidents.length}</Typography>
+              <Box mt={2}>
+                <Typography variant="subtitle1">Status</Typography>
+                <Link to={`/incident-history?status=Open`} style={{ textDecoration: 'none' }}>
+                  <Typography variant="body2">Open: {assignedUserStatusCounts.open}</Typography>
+                </Link>
+                <Link to={`/incident-history?status=Close`} style={{ textDecoration: 'none' }}>
+                  <Typography variant="body2">Close: {assignedUserStatusCounts.closed}</Typography>
+                </Link>
+                <Link to={`/incident-history?status=InProgress`} style={{ textDecoration: 'none' }}>
+                  <Typography variant="body2">In Progress: {assignedUserStatusCounts.inProgress}</Typography>
+                </Link>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+    </Box>
   );
 }

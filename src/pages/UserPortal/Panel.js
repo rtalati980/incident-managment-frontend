@@ -10,7 +10,7 @@ import Profile from './navBar/Profile';
 import AssignIncident from './navBar/AssignIncident';
 import IncidentHistory from './navBar/IncidentHistory';
 import IncidentDetail from './navBar/IncidentDetail';
-
+import Exp from './Exp';
 
 
 
@@ -26,6 +26,7 @@ const UserRoutes = ({email}) => {
       <Route path='/assignincdent' element={<AssignIncident />}/>
       <Route path='/incdentHistory' element ={<IncidentHistory/>}/>
       <Route path="/incident/id/:id" element={<IncidentDetail/>} />
+      <Route path="/exp/"  element={<Exp/>} />
       </Routes>
     </div>
   );

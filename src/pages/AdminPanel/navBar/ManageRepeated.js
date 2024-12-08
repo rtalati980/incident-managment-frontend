@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './edit.css';
+
 
 export default function ManageRepeated() {
   const [repeatedName, setRepeatedName] = useState('');

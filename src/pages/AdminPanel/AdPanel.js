@@ -23,7 +23,7 @@ const UserRoutes = () => {
         <Route path="/typeAdd" element={<TypeAdd />} />
         <Route path="/severity" element={<Severity />} />
         <Route path="/manageEntities" element={<ManageEntities />} />
-        <Route path="/manageStatus" element={<ManageStatus />} />
+        <Route path="/manageSatus" element={<ManageStatus />} />
         <Route path="/manageRepeated" element={<ManageRepeated />} />
         <Route path="/manageBehaviours" element={<ManageBehaviours />} />
         <Route path="/inciReports" element={<IncidentReports />} />

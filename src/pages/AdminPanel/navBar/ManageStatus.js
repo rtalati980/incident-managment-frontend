@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import './edit.css';
+import { Button, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
+
 
 export default function ManageStatus() {
   const [statusName, setStatusName] = useState('');
@@ -56,40 +57,61 @@ export default function ManageStatus() {
 
   return (
     <div className='eit'>
-      <form className='add' onSubmit={handleSubmit}>
-        <div className='in'>
-          <input 
-            placeholder='Status Name' 
-            value={statusName} 
+      <form className='add' onSubmit={handleSubmit} style={{ marginBottom: '20px' }}>
+        <div className='in' style={{ marginBottom: '10px' }}>
+          <TextField
+            label="Status Name"
+            variant="outlined"
+            value={statusName}
             onChange={(e) => setStatusName(e.target.value)}
+            fullWidth
           />
         </div>
         <div className='sub'>
-          <input type='submit' value={editingStatusId ? 'Update' : 'Submit'} />
+          <Button type="submit" variant="contained" color="primary">
+            {editingStatusId ? 'Update' : 'Submit'}
+          </Button>
         </div>
       </form>
       
-      <table className='location-table'>
-        <thead>
-          <tr>
-            <th>Number</th>
-            <th>Status Name</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {statuses.map((status, index) => (
-            <tr key={status.id}>
-              <td>{index + 1}</td>
-              <td>{status.name}</td>
-              <td>
-                <button onClick={() => handleEdit(status.id, status.name)}>Edit</button>
-                <button onClick={() => handleDelete(status.id)}>Delete</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <TableContainer component={Paper}>
+        <Table className="location-table">
+          <TableHead>
+            <TableRow>
+              <TableCell>Number</TableCell>
+              <TableCell>Status Name</TableCell>
+              <TableCell>Action</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {statuses.map((status, index) => (
+              <TableRow key={status.id}>
+                <TableCell>{index + 1}</TableCell>
+                <TableCell>{status.name}</TableCell>
+                <TableCell>
+                  <Button
+                    variant="outlined"
+                    color="primary"
+                    size="small"
+                    onClick={() => handleEdit(status.id, status.name)}
+                    style={{ marginRight: 10 }}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    color="secondary"
+                    size="small"
+                    onClick={() => handleDelete(status.id)}
+                  >
+                    Delete
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
     </div>
   );
 }

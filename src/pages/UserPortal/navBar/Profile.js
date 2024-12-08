@@ -1,12 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import {jwtDecode} from 'jwt-decode';
-//import './Profile.css';
+import {
+  Avatar,
+  Button,
+  Container,
+  Grid,
+  TextField,
+  Typography,
+  Paper,
+  Box,
+} from '@mui/material';
+import LockIcon from '@mui/icons-material/Lock';
+import PersonIcon from '@mui/icons-material/Person';
 
 export default function Profile() {
   const [profile, setProfile] = useState({
     name: '',
     email: '',
-    role: ''
+    role: '',
   });
 
   const [isEditing, setIsEditing] = useState(false);
@@ -18,8 +29,8 @@ export default function Profile() {
     try {
       const response = await fetch(`http://localhost:5000/api/auth/${userId}`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('jwt')}`
-        }
+          Authorization: `Bearer ${localStorage.getItem('jwt')}`,
+        },
       });
 
       if (!response.ok) {
@@ -40,14 +51,17 @@ export default function Profile() {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/auth/${profile.id}/change-password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('jwt')}`
-        },
-        body: JSON.stringify({ newPassword })
-      });
+      const response = await fetch(
+        `http://localhost:5000/api/auth/${profile.id}/change-password`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('jwt')}`,
+          },
+          body: JSON.stringify({ newPassword }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error('Failed to change password');
@@ -72,42 +86,75 @@ export default function Profile() {
   }, []);
 
   return (
-    <div className="profile-container">
-      <h1>Profile</h1>
-      <div className="profile-details">
-        <p><strong>Name:</strong> {profile.name}</p>
-        <p><strong>Email:</strong> {profile.email}</p>
-        <p><strong>Role:</strong> {profile.role}</p>
-      </div>
-      {isEditing ? (
-        <div className="password-change-container">
-          <h2>Change Password</h2>
-          <form className="password-change-form">
-            <label>
-              New Password:
-              <input
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-              />
-            </label>
-            <br />
-            <label>
-              Confirm Password:
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-              />
-            </label>
-            <br />
-            <button type="button" onClick={handlePasswordChangeClick}>Change Password</button>
-          </form>
-          {errorMessage && <p className="error-message">{errorMessage}</p>}
-        </div>
-      ) : (
-        <button onClick={() => setIsEditing(true)}>Change Password</button>
-      )}
-    </div>
+    <Container maxWidth="sm">
+      <Paper elevation={3} sx={{ padding: 4, marginTop: 4 }}>
+        <Box textAlign="center">
+          <Avatar sx={{ margin: '0 auto', bgcolor: 'primary.main', width: 80, height: 80 }}>
+            <PersonIcon sx={{ fontSize: 50 }} />
+          </Avatar>
+          <Typography variant="h5" sx={{ marginTop: 2 }}>
+            {profile.name}
+          </Typography>
+          <Typography variant="subtitle1" color="textSecondary">
+            {profile.role}
+          </Typography>
+        </Box>
+        <Box mt={4}>
+          <Typography variant="body1">
+            <strong>Email:</strong> {profile.email}
+          </Typography>
+        </Box>
+        {isEditing ? (
+          <Box mt={4}>
+            <Typography variant="h6" gutterBottom>
+              Change Password
+            </Typography>
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <TextField
+                  label="New Password"
+                  type="password"
+                  fullWidth
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  variant="outlined"
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  label="Confirm Password"
+                  type="password"
+                  fullWidth
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  variant="outlined"
+                />
+              </Grid>
+            </Grid>
+            {errorMessage && (
+              <Typography color="error" mt={2}>
+                {errorMessage}
+              </Typography>
+            )}
+            <Box mt={2} textAlign="center">
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handlePasswordChangeClick}
+                startIcon={<LockIcon />}
+              >
+                Change Password
+              </Button>
+            </Box>
+          </Box>
+        ) : (
+          <Box mt={4} textAlign="center">
+            <Button variant="outlined" color="primary" onClick={() => setIsEditing(true)}>
+              Change Password
+            </Button>
+          </Box>
+        )}
+      </Paper>
+    </Container>
   );
 }

@@ -1,5 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import './edit.css';
+import {
+  Container,
+  TextField,
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Typography,
+  Box,
+} from '@mui/material';
 
 export default function TypeAdd() {
   const [name, setName] = useState('');
@@ -8,15 +21,17 @@ export default function TypeAdd() {
 
   useEffect(() => {
     fetch('http://localhost:5000/api/types')
-      .then(response => response.json())
-      .then(data => setTypes(data))
-      .catch(error => console.error('Error fetching types:', error));
+      .then((response) => response.json())
+      .then((data) => setTypes(data))
+      .catch((error) => console.error('Error fetching types:', error));
   }, []);
 
   const handleSubmit = (event) => {
     event.preventDefault();
     const method = editingId ? 'PUT' : 'POST';
-    const url = editingId ? `http://localhost:5000/api/types/${editingId}` : 'http://localhost:5000/api/types';
+    const url = editingId
+      ? `http://localhost:5000/api/types/${editingId}`
+      : 'http://localhost:5000/api/types';
 
     fetch(url, {
       method,
@@ -25,21 +40,21 @@ export default function TypeAdd() {
       },
       body: JSON.stringify({ name }),
     })
-      .then(response => response.json())
-      .then(data => {
+      .then((response) => response.json())
+      .then((data) => {
         if (editingId) {
-          setTypes(types.map(type => type.id === editingId ? data : type));
+          setTypes(types.map((type) => (type.id === editingId ? data : type)));
         } else {
           setTypes([...types, data]);
         }
         setName('');
         setEditingId(null);
       })
-      .catch(error => console.error('Error:', error));
+      .catch((error) => console.error('Error:', error));
   };
 
   const handleEdit = (id) => {
-    const type = types.find(type => type.id === id);
+    const type = types.find((type) => type.id === id);
     setName(type.name);
     setEditingId(id);
   };
@@ -49,48 +64,69 @@ export default function TypeAdd() {
       method: 'DELETE',
     })
       .then(() => {
-        setTypes(types.filter(type => type.id !== id));
+        setTypes(types.filter((type) => type.id !== id));
       })
-      .catch(error => console.error('Error:', error));
+      .catch((error) => console.error('Error:', error));
   };
 
   return (
-    <div className='eit'>
-      <h1>Type Of Incident</h1>
-      <form className='add' onSubmit={handleSubmit}>
-        <div className='in'>
-          <input 
-            placeholder='type' 
-            value={name} 
-            onChange={(e) => setName(e.target.value)}
-          />
-        </div>
-        <div className='sub'>
-          <input type='submit' value={editingId ? 'Update' : 'Submit'} />
-        </div>
-      </form>
-      
-      <table className='location-table'>
-        <thead>
-          <tr>
-            <th>Number</th>
-            <th>Name</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {types.map((type, index) => (
-            <tr key={type.id}>
-              <td>{index + 1}</td>
-              <td>{type.name}</td>
-              <td>
-                <button onClick={() => handleEdit(type.id)}>Edit</button>
-                <button onClick={() => handleDelete(type.id)}>Delete</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <Container>
+      <Typography variant="h4" gutterBottom>
+        Type of Incident
+      </Typography>
+      <Box
+        component="form"
+        onSubmit={handleSubmit}
+        sx={{ display: 'flex', gap: 2, mb: 3 }}
+      >
+        <TextField
+          label="Type"
+          variant="outlined"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          fullWidth
+        />
+        <Button type="submit" variant="contained" color="primary">
+          {editingId ? 'Update' : 'Submit'}
+        </Button>
+      </Box>
+
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Number</TableCell>
+              <TableCell>Name</TableCell>
+              <TableCell>Action</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {types.map((type, index) => (
+              <TableRow key={type.id}>
+                <TableCell>{index + 1}</TableCell>
+                <TableCell>{type.name}</TableCell>
+                <TableCell>
+                  <Button
+                    variant="outlined"
+                    color="primary"
+                    onClick={() => handleEdit(type.id)}
+                    sx={{ mr: 1 }}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    onClick={() => handleDelete(type.id)}
+                  >
+                    Delete
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Container>
   );
 }
