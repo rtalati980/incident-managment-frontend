@@ -13,6 +13,7 @@ import {
   Typography,
 } from '@mui/material';
 import Select from 'react-select';
+import config from  '../../../config';
 
 export default function Wrklctn() {
   const [name, setName] = useState('');
@@ -29,7 +30,7 @@ export default function Wrklctn() {
 
   const fetchLocations = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/wrklctns');
+      const response = await fetch(`${config.API_BASE_URL}/api/wrklctns`);
       if (!response.ok) throw new Error('Failed to fetch locations');
       const locationData = await response.json();
 
@@ -37,7 +38,7 @@ export default function Wrklctn() {
         locationData.map(async (location) => {
           if (location.UserID) {
             const userResponse = await fetch(
-              `http://localhost:5000/api/auth/${location.UserID}`
+              `$API_BASE_URL/api/auth/${location.UserID}`
             );
             if (userResponse.ok) {
               const userData = await userResponse.json();
@@ -58,7 +59,7 @@ export default function Wrklctn() {
       const token = localStorage.getItem('jwt');
       if (!token) throw new Error('JWT token not found');
 
-      const response = await fetch('http://localhost:5000/api/auth', {
+      const response = await fetch(`${config.API_BASE_URL}/api/auth`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -83,8 +84,8 @@ export default function Wrklctn() {
     event.preventDefault();
     const method = editingId ? 'PUT' : 'POST';
     const url = editingId
-      ? `http://localhost:5000/api/wrklctns/${editingId}`
-      : 'http://localhost:5000/api/wrklctns';
+      ? `${config.API_BASE_URL}/api/wrklctns/${editingId}`
+      : `${config.API_BASE_URL}/api/wrklctns`;
 
     const requestBody = {
       name,
@@ -128,7 +129,7 @@ export default function Wrklctn() {
 
   const handleDelete = async (id) => {
     try {
-      await fetch(`http://localhost:5000/api/wrklctns/${id}`, {
+      await fetch(`$API_BASE_URL/api/wrklctns/${id}`, {
         method: 'DELETE',
       });
       setLocations((prevLocations) =>

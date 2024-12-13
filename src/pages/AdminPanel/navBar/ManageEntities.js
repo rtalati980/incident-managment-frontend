@@ -17,6 +17,7 @@ import {
   Typography,
   Box,
 } from '@mui/material';
+import config from  '../../../config';
 
 export default function ManageEntities() {
   const [categoryName, setCategoryName] = useState('');
@@ -33,14 +34,14 @@ export default function ManageEntities() {
   }, []);
 
   const fetchCategories = () => {
-    fetch('http://localhost:5000/api/categories')
+    fetch(`${config.API_BASE_URL}/api/categories`)
       .then((response) => response.json())
       .then((data) => setCategories(data))
       .catch((error) => console.error('Error fetching categories:', error));
   };
 
   const fetchSubcategories = () => {
-    fetch('http://localhost:5000/api/subcategories')
+    fetch(`${config.API_BASE_URL}/api/subcategories`)
       .then((response) => response.json())
       .then((data) => setSubcategories(data))
       .catch((error) => console.error('Error fetching subcategories:', error));
@@ -51,8 +52,8 @@ export default function ManageEntities() {
     if (categoryName.trim() !== '') {
       const method = editingCategoryId ? 'PUT' : 'POST';
       const url = editingCategoryId
-        ? `http://localhost:5000/api/categories/${editingCategoryId}`
-        : 'http://localhost:5000/api/categories';
+        ? `${config.API_BASE_URL}/api/categories/${editingCategoryId}`
+        : `${config.API_BASE_URL}/api/categories`;
 
       fetch(url, {
         method,
@@ -84,8 +85,8 @@ export default function ManageEntities() {
     if (subcategoryName.trim() !== '' && selectedCategoryId.trim() !== '') {
       const method = editingSubcategoryId ? 'PUT' : 'POST';
       const url = editingSubcategoryId
-        ? `http://localhost:5000/api/subcategories/${editingSubcategoryId}`
-        : 'http://localhost:5000/api/subcategories';
+        ? `${config.API_BASE_URL}/api/subcategories/${editingSubcategoryId}`
+        : `${config.API_BASE_URL}/api/subcategories`;
 
       fetch(url, {
         method,
@@ -128,7 +129,7 @@ export default function ManageEntities() {
   };
 
   const handleCategoryDelete = (id) => {
-    fetch(`http://localhost:5000/api/categories/${id}`, {
+    fetch(`${config.API_BASE_URL}/api/categories/${id}`, {
       method: 'DELETE',
     })
       .then(() => {
@@ -141,7 +142,7 @@ export default function ManageEntities() {
   };
 
   const handleSubcategoryDelete = (id) => {
-    fetch(`http://localhost:5000/api/subcategories/${id}`, {
+    fetch(`${config.API_BASE_URL}/api/subcategories/${id}`, {
       method: 'DELETE',
     })
       .then(() => {

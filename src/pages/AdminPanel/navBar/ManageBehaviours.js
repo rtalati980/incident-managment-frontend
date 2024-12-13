@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
+import config from  '../../../config';
 
 export default function ManageBehaviours() {
   const [behaviourName, setBehaviourName] = useState('');
@@ -7,7 +7,7 @@ export default function ManageBehaviours() {
   const [editingBehaviourId, setEditingBehaviourId] = useState(null);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/behaviours')
+    fetch(`${config.API_BASE_URL}/api/behaviours`)
       .then(response => response.json())
       .then(data => setBehaviours(data))
       .catch(error => console.error('Error fetching behaviours:', error));
@@ -17,7 +17,7 @@ export default function ManageBehaviours() {
     event.preventDefault();
     if (behaviourName.trim() !== '') {
       const method = editingBehaviourId ? 'PUT' : 'POST';
-      const url = editingBehaviourId ? `http://localhost:5000/api/behaviours/${editingBehaviourId}` : 'http://localhost:5000/api/behaviours';
+      const url = editingBehaviourId ? `${config.API_BASE_URL}/api/behaviours/${editingBehaviourId}` : `${config.API_BASE_URL}/api/behaviours`;
       fetch(url, {
         method,
         headers: {
@@ -45,7 +45,7 @@ export default function ManageBehaviours() {
   };
 
   const handleDelete = (id) => {
-    fetch(`http://localhost:5000/api/behaviours/${id}`, {
+    fetch(`${config.API_BASE_URL}/api/behaviours/${id}`, {
       method: 'DELETE',
     })
       .then(() => {

@@ -12,6 +12,7 @@ import {
 } from '@mui/material';
 import LockIcon from '@mui/icons-material/Lock';
 import PersonIcon from '@mui/icons-material/Person';
+import config from  '../../../config';
 
 export default function Profile() {
   const [profile, setProfile] = useState({
@@ -27,7 +28,7 @@ export default function Profile() {
 
   const fetchProfile = async (userId) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/auth/${userId}`, {
+      const response = await fetch(`${config.API_BASE_URL}/api/auth/${userId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('jwt')}`,
         },
@@ -52,7 +53,7 @@ export default function Profile() {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/auth/${profile.id}/change-password`,
+        `${config.API_BASE_URL}/api/auth/${profile.id}/change-password`,
         {
           method: 'POST',
           headers: {

@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { Timeline, TimelineItem, TimelineSeparator, TimelineConnector, TimelineContent, TimelineDot } from '@mui/lab';
 import { Paper, Typography } from '@mui/material';
 import './incidentRepo.css';
+import config from '../../../config';
 
 function IncidentDetail() {
   const { id } = useParams();
@@ -17,7 +18,7 @@ function IncidentDetail() {
           throw new Error('JWT token not found');
         }
 
-        const response = await fetch(`http://localhost:5000/api/incidents/${id}`, {
+        const response = await fetch(`${config.API_BASE_URL}/api/incidents/${id}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
@@ -41,7 +42,7 @@ function IncidentDetail() {
           throw new Error('JWT token not found');
         }
 
-        const response = await fetch(`http://localhost:5000/api/incident-history/${id}`, {
+        const response = await fetch(`${config.API_BASE_URL}/api/incident-history/${id}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
           },

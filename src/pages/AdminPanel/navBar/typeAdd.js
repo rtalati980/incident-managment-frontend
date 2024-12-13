@@ -13,6 +13,7 @@ import {
   Typography,
   Box,
 } from '@mui/material';
+import config from  '../../../config';
 
 export default function TypeAdd() {
   const [name, setName] = useState('');
@@ -20,7 +21,7 @@ export default function TypeAdd() {
   const [editingId, setEditingId] = useState(null);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/types')
+    fetch(`${config.API_BASE_URL}/api/types`)
       .then((response) => response.json())
       .then((data) => setTypes(data))
       .catch((error) => console.error('Error fetching types:', error));
@@ -30,8 +31,8 @@ export default function TypeAdd() {
     event.preventDefault();
     const method = editingId ? 'PUT' : 'POST';
     const url = editingId
-      ? `http://localhost:5000/api/types/${editingId}`
-      : 'http://localhost:5000/api/types';
+      ? `${config.API_BASE_URL}/api/types/${editingId}`
+      : `${config.API_BASE_URL}/api/types`;
 
     fetch(url, {
       method,
@@ -60,7 +61,7 @@ export default function TypeAdd() {
   };
 
   const handleDelete = (id) => {
-    fetch(`http://localhost:5000/api/types/${id}`, {
+    fetch(`$API_BASE_URL/api/types/${id}`, {
       method: 'DELETE',
     })
       .then(() => {

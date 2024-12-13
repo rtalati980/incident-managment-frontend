@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, Typography, Box, Grid } from '@mui/material';
 import './dash.css';
+import config from '../../../config';
+
 
 export default function Dashboard() {
   const [incidents, setIncidents] = useState([]);
@@ -16,7 +18,7 @@ export default function Dashboard() {
         throw new Error('JWT token not found');
       }
 
-      const response = await fetch('http://localhost:5000/api/incidents/id/getuser', {
+      const response = await fetch(`${config.API_BASE_URL}/api/incidents/id/getuser`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -41,7 +43,7 @@ export default function Dashboard() {
         throw new Error('JWT token not found');
       }
 
-      const response = await fetch('http://localhost:5000/api/incidents/assignto/getuser', {
+      const response = await fetch(`${config.API_BASE_URL}/api/incidents/assignto/getuser`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

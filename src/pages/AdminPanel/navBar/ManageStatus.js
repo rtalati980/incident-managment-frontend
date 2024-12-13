@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
-
+import config from '../../../config';
 
 export default function ManageStatus() {
   const [statusName, setStatusName] = useState('');
@@ -8,7 +8,7 @@ export default function ManageStatus() {
   const [editingStatusId, setEditingStatusId] = useState(null);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/statuses')
+    fetch(`${config.API_BASE_URL}/api/statuses`)
       .then(response => response.json())
       .then(data => setStatuses(data))
       .catch(error => console.error('Error fetching statuses:', error));
@@ -18,7 +18,7 @@ export default function ManageStatus() {
     event.preventDefault();
     if (statusName.trim() !== '') {
       const method = editingStatusId ? 'PUT' : 'POST';
-      const url = editingStatusId ? `http://localhost:5000/api/statuses/${editingStatusId}` : 'http://localhost:5000/api/statuses';
+      const url = editingStatusId ? `${config.API_BASE_URL}/api/statuses/${editingStatusId}` : `${config.API_BASE_URL}/api/statuses`;
       fetch(url, {
         method,
         headers: {
@@ -46,7 +46,7 @@ export default function ManageStatus() {
   };
 
   const handleDelete = (id) => {
-    fetch(`http://localhost:5000/api/statuses/${id}`, {
+    fetch(`${config.API_BASE_URL}/api/statuses/${id}`, {
       method: 'DELETE',
     })
       .then(() => {

@@ -3,6 +3,7 @@ import './incidentRepo.css'; // Import the CSS file
 import { Link } from 'react-router-dom';
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import config from '../../../config';
 
 export default function IncidentRepo() {
   const [incidents, setIncidents] = useState([]);
@@ -19,7 +20,7 @@ export default function IncidentRepo() {
         throw new Error('JWT token not found');
       }
 
-      const response = await fetch('http://localhost:5000/api/incidents/id/getuser', {
+      const response = await fetch(`${config.API_BASE_URL}/api/incidents/id/getuser`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -38,7 +39,7 @@ export default function IncidentRepo() {
       // Fetch additional data for each incident
       const updatedData = await Promise.all(data.map(async incident => {
         // Fetch workLocation data
-        const workLocationResponse = await fetch(`http://localhost:5000/api/workLocations/name/${incident.workLocation}`, {
+        const workLocationResponse = await fetch(`${config.API_BASE_URL}/api/workLocations/name/${incident.workLocation}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -46,7 +47,7 @@ export default function IncidentRepo() {
         const workLocationData = await workLocationResponse.json();
         
         // Fetch user data
-        const userResponse = await fetch(`http://localhost:5000/api/auth/id/${incident.userId}`, {
+        const userResponse = await fetch(`${config.API_BASE_URL}/api/auth/id/${incident.userId}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }

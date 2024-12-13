@@ -7,7 +7,7 @@ import AccountCircle from '@mui/icons-material/AccountCircle';
 import NotificationsNoneRoundedIcon from '@mui/icons-material/NotificationsNoneRounded';
 import { jwtDecode } from 'jwt-decode';
 import logoImg  from '../../../../png/knor.PNG';
-
+import config from '../../../../config';
 
 export default function Header() {
   const [userName, setUserName] = useState('');
@@ -20,7 +20,7 @@ export default function Header() {
   useEffect(() => {
     const fetchUserData = async (userId) => {
       try {
-        const response = await fetch(`http://localhost:5000/api/auth/${userId}`);
+        const response = await fetch(`${config.API_BASE_URL}/api/auth/${userId}`);
         const data = await response.json();
         setUserName(data[0].name);
       } catch (error) {
@@ -84,7 +84,7 @@ export default function Header() {
   };
 
   return (
-    <AppBar position="static" style={{ backgroundColor: '#e2e2e2', color:"#5b5b5b"  }}>
+    <AppBar position="static" style={{ background:"#fff" , color:"#5b5b5b"  }}>
       <Toolbar>
         {/* Logo or Title */}
 
@@ -93,7 +93,7 @@ export default function Header() {
         </Typography>
 
         {/* User Info */}
-        <Typography variant="body1" sx={{ marginRight: 2, color: '#5b5b5b' }}>
+        <Typography variant="body1" sx={{ marginRight: 2, color: '#04507e' }}>
           {role} - {userName}
         </Typography>
 
@@ -105,11 +105,11 @@ export default function Header() {
           aria-label="account of current user"
           onClick={handleMenuOpen}
         >
-          <AccountCircle  sx={{color:"#5b5b5b"}}/>
+          <AccountCircle  sx={{color:"#00457e"}}/>
          
         </IconButton>
 
-        <NotificationsNoneRoundedIcon sx={{ color: '#5b5b5b' }} />
+        <NotificationsNoneRoundedIcon sx={{ color: '#00457E' }} />
         <Menu
           id="account-menu"
           anchorEl={anchorEl}
@@ -137,7 +137,7 @@ export default function Header() {
         textColor="inherit"
         indicatorColor="primary"
         variant="scrollable"
-        sx={{color:"blue"}}
+        sx={{color:"#00457E" , padding:"0 40px"}}
       >
       
         <Tab label="DASHBOARD" />

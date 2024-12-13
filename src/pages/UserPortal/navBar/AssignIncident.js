@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './incidentRepo.css'; // Import the CSS file
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import config from '../../../config';
 
 export default function AssignIncident() {
   const [incidents, setIncidents] = useState([]);
@@ -29,7 +30,7 @@ export default function AssignIncident() {
         throw new Error('JWT token not found');
       }
 
-      const response = await fetch('http://localhost:5000/api/incidents/assignto/getuser', {
+      const response = await fetch(`${config.API_BASE_URL}/api/incidents/assignto/getuser`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
 
@@ -53,7 +54,7 @@ export default function AssignIncident() {
         throw new Error('JWT token not found');
       }
 
-      const response = await fetch('http://localhost:5000/api/auth', {
+      const response = await fetch(`${config.API_BASE_URL}/api/auth`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
 
@@ -103,7 +104,7 @@ export default function AssignIncident() {
         Comment: comments,
       };
 
-      const response = await fetch('http://localhost:5000/api/incident-history/', {
+      const response = await fetch(`${config.API_BASE_URL}/api/incident-history/`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

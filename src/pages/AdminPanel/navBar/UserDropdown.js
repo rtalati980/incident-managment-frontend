@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Select from 'react-select';
+import { API_BASE_URL } from './config';
+
 
 const UserDropdown = ({ onUserSelect }) => {
     const [options, setOptions] = useState([]);
@@ -14,7 +16,7 @@ const UserDropdown = ({ onUserSelect }) => {
                     throw new Error('JWT token not found');
                 }
 
-                const response = await fetch('http://localhost:5000/api/auth/', {
+                const response = await fetch(`$API_BASE_URL/api/auth/`, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`

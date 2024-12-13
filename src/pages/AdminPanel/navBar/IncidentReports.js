@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { TextField, Button, Select, MenuItem, FormControl, InputLabel, Accordion, AccordionSummary, AccordionDetails, Table, TableBody, TableCell, TableHead, TableRow, Typography } from '@mui/material';
 import { ExpandMore } from '@mui/icons-material';
 import * as XLSX from 'xlsx';
-import '../../UserPortal/navBar/incidentRepo.css'; // Import the CSS file
+import '../../UserPortal/navBar/incidentRepo.css';
+import config from  '../../../config'; // Import the CSS file
 
 export default function IncidentRepo() {
   const [incidents, setIncidents] = useState([]);
@@ -21,7 +22,7 @@ export default function IncidentRepo() {
         throw new Error('JWT token not found');
       }
 
-      const response = await fetch('http://localhost:5000/api/incidents', {
+      const response = await fetch(`${config.API_BASE_URL}/api/incidents`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

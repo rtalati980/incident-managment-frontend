@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Grid, FormControl, InputLabel, Select, MenuItem, Button } from "@mui/material";
+import config from '../../config';
 
 const AssignUsersComponent = () => {
   const [users, setUsers] = useState([]); // State to store fetched assignees
@@ -9,7 +10,7 @@ const AssignUsersComponent = () => {
 
   // Fetch assignee names from the API
   useEffect(() => {
-    fetch("http://localhost:5000/api/auth")
+    fetch(`${config.API_BASE_URL}/api/auth`)
       .then((response) => {
         if (!response.ok) {
           throw new Error("Failed to fetch assignees");

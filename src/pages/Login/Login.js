@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {jwtDecode} from 'jwt-decode'; // Correct import statement
 import './login.css';
-
+import config from '../../config';
 
 const Login = ({ onLogin }) => {
   const [loginData, setLoginData] = useState({ email: '', password: '' });
@@ -16,7 +16,7 @@ const Login = ({ onLogin }) => {
     e.preventDefault();
     const { email, password } = loginData;
 
-    fetch('http://localhost:5000/api/auth/login', {
+    fetch(`${config.API_BASE_URL}/api/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

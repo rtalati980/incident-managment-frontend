@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
+import config from '../../../config';
 
 export default function ManageRepeated() {
   const [repeatedName, setRepeatedName] = useState('');
@@ -7,7 +7,7 @@ export default function ManageRepeated() {
   const [editingRepeatedId, setEditingRepeatedId] = useState(null);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/repeateds')
+    fetch(`${config.API_BASE_URL}/api/repeateds`)
       .then(response => response.json())
       .then(data => setRepeateds(data))
       .catch(error => console.error('Error fetching repeateds:', error));
@@ -17,7 +17,7 @@ export default function ManageRepeated() {
     event.preventDefault();
     if (repeatedName.trim() !== '') {
       const method = editingRepeatedId ? 'PUT' : 'POST';
-      const url = editingRepeatedId ? `http://localhost:5000/api/repeateds/${editingRepeatedId}` : 'http://localhost:5000/api/repeateds';
+      const url = editingRepeatedId ? `${config.API_BASE_URL}/api/repeateds/${editingRepeatedId}` : `${config.API_BASE_URL}/api/repeateds`;
       fetch(url, {
         method,
         headers: {
@@ -45,7 +45,7 @@ export default function ManageRepeated() {
   };
 
   const handleDelete = (id) => {
-    fetch(`http://localhost:5000/api/repeateds/${id}`, {
+    fetch(`${config.API_BASE_URL}/api/repeateds/${id}`, {
       method: 'DELETE',
     })
       .then(() => {

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { TextField, Button, MenuItem, Select, InputLabel, FormControl, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Box, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import config from  '../../../config';
 
 export default function AddUser() {
   const [empid, setEmpid] = useState('');
@@ -17,7 +18,7 @@ export default function AddUser() {
   const [popupMessage, setPopupMessage] = useState('');
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/auth/')
+    fetch(`${config.API_BASE_URL}/api/auth/`)
       .then(response => response.json())
       .then(data => setUsers(data))
       .catch(error => console.error('Error fetching users:', error));
@@ -27,7 +28,7 @@ export default function AddUser() {
     event.preventDefault();
     const token = localStorage.getItem('jwt');
     const method = editingId ? 'PUT' : 'POST';
-    const url = editingId ? `http://localhost:5000/api/users/${editingId}` : 'http://localhost:5000/api/auth/register';
+    const url = editingId ? `${config.API_BASE_URL}/api/users/${editingId}` : `${config.API_BASE_URL}/api/auth/register`;
   
     if (!empid || !name || !email || !password || !role) {
       console.error('Error: Missing required fields');
@@ -84,7 +85,7 @@ export default function AddUser() {
   };
 
   const handleDelete = (id) => {
-    fetch(`http://localhost:5000/api/users/${id}`, {
+    fetch(`$API_BASE_URL/api/users/${id}`, {
       method: 'DELETE',
     })
       .then(() => {

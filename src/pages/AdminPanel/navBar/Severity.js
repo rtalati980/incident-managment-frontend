@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
+import config from  '../../../config';
 
 export default function Severity() {
   const [name, setName] = useState('');
@@ -7,7 +7,7 @@ export default function Severity() {
   const [editingId, setEditingId] = useState(null);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/severities')
+    fetch(`${config.API_BASE_URL}/api/severities`)
       .then(response => response.json())
       .then(data => setSeverities(data))
       .catch(error => console.error('Error fetching severities:', error));
@@ -16,7 +16,7 @@ export default function Severity() {
   const handleSubmit = (event) => {
     event.preventDefault();
     const method = editingId ? 'PUT' : 'POST';
-    const url = editingId ? `http://localhost:5000/api/severities/${editingId}` : 'http://localhost:5000/api/severities';
+    const url = editingId ? `${config.API_BASE_URL}/api/severities/${editingId}` : `${config.API_BASE_URL}/api/severities`;
     
     fetch(url, {
       method,
@@ -45,7 +45,7 @@ export default function Severity() {
   };
 
   const handleDelete = (id) => {
-    fetch(`http://localhost:5000/api/severities/${id}`, {
+    fetch(`${config.API_BASE_URL}/api/severities/${id}`, {
       method: 'DELETE',
     })
       .then(() => {

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { DataGrid } from '@mui/x-data-grid';
 import { Box, Typography } from '@mui/material';
+import config from '../../../config';
 
 const IncidentHistory = () => {
   const [historyData, setHistoryData] = useState([]);
@@ -17,7 +18,7 @@ const IncidentHistory = () => {
           throw new Error('JWT token not found');
         }
 
-        const response = await fetch('http://localhost:5000/api/incident-history', {
+        const response = await fetch(`${config.API_BASE_URL}/api/incident-history`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

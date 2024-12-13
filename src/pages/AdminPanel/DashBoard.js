@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, Typography, Grid, Box } from '@mui/material';
 import { AccessAlarm, CheckCircle, HourglassEmpty } from '@mui/icons-material';
+import config from '../../config';
 
 export default function Dashboard() {
   const [incidents, setIncidents] = useState([]);
@@ -14,7 +15,7 @@ export default function Dashboard() {
         throw new Error('JWT token not found');
       }
 
-      const response = await fetch('http://localhost:5000/api/incidents/', {
+      const response = await fetch(`${config.API_BASE_URL}/api/incidents/`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
