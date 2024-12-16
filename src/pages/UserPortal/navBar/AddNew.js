@@ -1,52 +1,56 @@
-import React, { useEffect, useState } from 'react';
-import {jwtDecode} from 'jwt-decode';
+import React, { useState, useEffect } from 'react';
+import { jwtDecode } from 'jwt-decode';
 import {
-  Grid,
-  Button,
   TextField,
+  Button,
   Select,
   MenuItem,
   FormControl,
   InputLabel,
   CircularProgress,
+  Snackbar,
+  Alert,
+  Typography,
 } from '@mui/material';
-import { v4 as uuidv4 } from 'uuid';
+import config from '../../../config'; // Ensure you have your API_BASE_URL in a separate file
 
 const IncidentForm = () => {
-  const [categories, setCategories] = useState([]);
-  const [subcategories, setSubcategories] = useState([]);
   const [locations, setLocations] = useState([]);
   const [types, setTypes] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [subcategories, setSubcategories] = useState([]);
   const [users, setUsers] = useState([]);
+
+  const [selectedLocation, setSelectedLocation] = useState('');
+  const [selectedType, setSelectedType] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedSubcategory, setSelectedSubcategory] = useState('');
   const [assignments, setAssignments] = useState([]);
   const [files, setFiles] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [formData, setFormData] = useState({
-    location: '',
-    type: '',
-    category: '',
-    subcategory: '',
-  });
+
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [categoriesRes, subcategoriesRes, locationsRes, typesRes, usersRes] = await Promise.all([
-          fetch(`${process.env.REACT_APP_API_BASE_URL}/categories`),
-          fetch(`${process.env.REACT_APP_API_BASE_URL}/subcategories`),
-          fetch(`${process.env.REACT_APP_API_BASE_URL}/locations`),
-          fetch(`${process.env.REACT_APP_API_BASE_URL}/types`),
-          fetch(`${process.env.REACT_APP_API_BASE_URL}/users`),
+        const [locationsData, typesData, categoriesData, subcategoriesData, usersData] = await Promise.all([
+          fetchDataFromAPI('/api/wrklctns'),
+          fetchDataFromAPI('/api/types'),
+          fetchDataFromAPI('/api/categories'),
+          fetchDataFromAPI('/api/subcategories'),
+          fetchDataFromAPI('/api/auth'),
         ]);
 
-        setCategories(await categoriesRes.json());
-        setSubcategories(await subcategoriesRes.json());
-        setLocations(await locationsRes.json());
-        setTypes(await typesRes.json());
-        setUsers(await usersRes.json());
-      } catch (error) {
-        console.error('Error fetching data:', error);
+        setLocations(locationsData);
+        setTypes(typesData);
+        setCategories(categoriesData);
+        setSubcategories(subcategoriesData);
+        setUsers(usersData);
+      } catch (err) {
+        setErrorMessage(err.message || 'Error fetching data');
       } finally {
         setLoading(false);
       }
@@ -55,194 +59,179 @@ const IncidentForm = () => {
     fetchData();
   }, []);
 
-  const handleInputChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const fetchDataFromAPI = async (endpoint) => {
+    const response = await fetch(`${config.API_BASE_URL}${endpoint}`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch data from ${endpoint}`);
+    }
+    return response.json();
   };
 
-  const addAssignment = () => {
-    setAssignments((prev) => [...prev, { id: uuidv4(), selectedUsers: [] }]);
+  const handleFileChange = (event) => {
+    const uploadedFiles = Array.from(event.target.files);
+    setFiles((prevFiles) => [...prevFiles, ...uploadedFiles]);
   };
 
-  const handleUserChange = (id, event) => {
-    const { value } = event.target;
-    setAssignments((prev) =>
-      prev.map((assignment) =>
-        assignment.id === id ? { ...assignment, selectedUsers: value } : assignment
-      )
-    );
-  };
-
-  const removeAssignment = (id) => {
-    setAssignments((prev) => prev.filter((assignment) => assignment.id !== id));
-  };
-
-  const addFile = () => {
-    setFiles((prev) => [...prev, { id: uuidv4(), file: null }]);
-  };
-
-  const handleFileChange = (id, file) => {
-    setFiles((prev) =>
-      prev.map((fileObj) =>
-        fileObj.id === id ? { ...fileObj, file, filePreview: URL.createObjectURL(file) } : fileObj
-      )
-    );
-  };
-
-  const removeFile = (id) => {
-    setFiles((prev) => prev.filter((fileObj) => fileObj.id !== id));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const payload = {
-        ...formData,
-        assignments,
-        files: files.map((file) => file.file),
-      };
-      await fetch(`${process.env.REACT_APP_API_BASE_URL}/incidents`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-      alert('Incident submitted successfully!');
-    } catch (error) {
-      console.error('Error submitting incident:', error);
-      alert('Failed to submit incident. Please try again.');
+  const handleAssignmentAdd = (userId) => {
+    if (!assignments.includes(userId)) {
+      setAssignments((prev) => [...prev, userId]);
     }
   };
 
-  if (loading) return <CircularProgress />;
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!selectedLocation || !selectedType || !selectedCategory || !selectedSubcategory) {
+      setErrorMessage('Please fill all required fields');
+      return;
+    }
+
+    const token = localStorage.getItem('jwt');
+    const decodedToken = jwtDecode(token);
+    const creatorId = decodedToken.userId;
+
+    const formData = new FormData();
+    formData.append('location', selectedLocation);
+    formData.append('type', selectedType);
+    formData.append('category', selectedCategory);
+    formData.append('subcategory', selectedSubcategory);
+    formData.append('creatorId', creatorId);
+    assignments.forEach((id, index) => formData.append(`assignments[${index}]`, id));
+    files.forEach((file, index) => formData.append(`files[${index}]`, file));
+
+    try {
+      setLoading(true);
+      const response = await fetch(`${config.API_BASE_URL}/api/incidents`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit incident');
+      }
+
+      setSuccessMessage('Incident submitted successfully');
+      setErrorMessage('');
+      setFiles([]);
+      setAssignments([]);
+    } catch (err) {
+      setErrorMessage(err.message || 'Error submitting incident');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <Grid container spacing={2}>
-        <Grid item xs={12}>
-          <FormControl fullWidth>
-            <InputLabel>Location</InputLabel>
-            <Select
-              name="location"
-              value={formData.location}
-              onChange={handleInputChange}
-            >
-              {locations.map((loc) => (
-                <MenuItem key={loc.id} value={loc.id}>
-                  {loc.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Grid>
-        <Grid item xs={12}>
-          <FormControl fullWidth>
-            <InputLabel>Type</InputLabel>
-            <Select
-              name="type"
-              value={formData.type}
-              onChange={handleInputChange}
-            >
-              {types.map((type) => (
-                <MenuItem key={type.id} value={type.id}>
-                  {type.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Grid>
-        <Grid item xs={12}>
-          <FormControl fullWidth>
-            <InputLabel>Category</InputLabel>
-            <Select
-              name="category"
-              value={formData.category}
-              onChange={handleInputChange}
-            >
-              {categories.map((category) => (
-                <MenuItem key={category.id} value={category.id}>
-                  {category.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Grid>
-        <Grid item xs={12}>
-          <FormControl fullWidth>
-            <InputLabel>Subcategory</InputLabel>
-            <Select
-              name="subcategory"
-              value={formData.subcategory}
-              onChange={handleInputChange}
-            >
-              {subcategories.map((subcategory) => (
-                <MenuItem key={subcategory.id} value={subcategory.id}>
-                  {subcategory.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Grid>
-        {assignments.map((assignment) => (
-          <Grid container spacing={2} key={assignment.id}>
-            <Grid item xs={12} sm={8}>
-              <FormControl fullWidth>
-                <InputLabel>Select Assignee(s)</InputLabel>
-                <Select
-                  multiple
-                  value={assignment.selectedUsers}
-                  onChange={(e) => handleUserChange(assignment.id, e)}
-                >
-                  {users.map((user) => (
-                    <MenuItem key={user.id} value={user.id}>
-                      {user.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <Button variant="outlined" onClick={() => removeAssignment(assignment.id)}>
-                Remove
-              </Button>
-            </Grid>
-          </Grid>
-        ))}
-        <Grid item xs={12}>
-          <Button variant="outlined" onClick={addAssignment}>
-            Add Assignment
-          </Button>
-        </Grid>
-        {files.map((fileObj) => (
-          <Grid item xs={12} sm={6} key={fileObj.id}>
-            <input
-              type="file"
-              onChange={(e) => handleFileChange(fileObj.id, e.target.files[0])}
-            />
-            <Button variant="outlined" onClick={() => removeFile(fileObj.id)}>
-              Remove
-            </Button>
-            {fileObj.filePreview && (
-              <img
-                src={fileObj.filePreview}
-                alt="File Preview"
-                style={{ width: '100px' }}
-              />
-            )}
-          </Grid>
-        ))}
-        <Grid item xs={12}>
-          <Button variant="outlined" onClick={addFile}>
-            Add File
-          </Button>
-        </Grid>
-        <Grid item xs={12}>
-          <Button type="submit" variant="contained" color="primary">
-            Submit
-          </Button>
-        </Grid>
-      </Grid>
-    </form>
+    <div style={{ padding: '20px' }}>
+      <Typography variant="h4" gutterBottom>
+        Create Incident
+      </Typography>
+
+      {loading && <CircularProgress />}
+
+      <form onSubmit={handleSubmit}>
+        <FormControl fullWidth margin="normal">
+          <InputLabel>Location</InputLabel>
+          <Select
+            value={selectedLocation}
+            onChange={(e) => setSelectedLocation(e.target.value)}
+          >
+            {locations.map((loc) => (
+              <MenuItem key={loc.id} value={loc.id}>
+                {loc.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <FormControl fullWidth margin="normal">
+          <InputLabel>Type</InputLabel>
+          <Select
+            value={selectedType}
+            onChange={(e) => setSelectedType(e.target.value)}
+          >
+            {types.map((type) => (
+              <MenuItem key={type.id} value={type.id}>
+                {type.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <FormControl fullWidth margin="normal">
+          <InputLabel>Category</InputLabel>
+          <Select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+          >
+            {categories.map((cat) => (
+              <MenuItem key={cat.id} value={cat.id}>
+                {cat.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <FormControl fullWidth margin="normal">
+          <InputLabel>Subcategory</InputLabel>
+          <Select
+            value={selectedSubcategory}
+            onChange={(e) => setSelectedSubcategory(e.target.value)}
+          >
+            {subcategories.map((sub) => (
+              <MenuItem key={sub.id} value={sub.id}>
+                {sub.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <TextField
+          label="Assign Users"
+          fullWidth
+          margin="normal"
+          select
+          onChange={(e) => handleAssignmentAdd(e.target.value)}
+        >
+          {users.map((user) => (
+            <MenuItem key={user.id} value={user.id}>
+              {user.name}
+            </MenuItem>
+          ))}
+        </TextField>
+
+        <input
+          type="file"
+          multiple
+          onChange={handleFileChange}
+          style={{ margin: '20px 0' }}
+        />
+
+        <Button
+          type="submit"
+          variant="contained"
+          color="primary"
+          disabled={loading}
+        >
+          Submit
+        </Button>
+
+        {errorMessage && (
+          <Snackbar open autoHideDuration={6000} onClose={() => setErrorMessage('')}>
+            <Alert severity="error">{errorMessage}</Alert>
+          </Snackbar>
+        )}
+
+        {successMessage && (
+          <Snackbar open autoHideDuration={6000} onClose={() => setSuccessMessage('')}>
+            <Alert severity="success">{successMessage}</Alert>
+          </Snackbar>
+        )}
+      </form>
+    </div>
   );
 };
 
