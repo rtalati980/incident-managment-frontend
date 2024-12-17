@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, Typography, Grid, Box } from '@mui/material';
 import { AccessAlarm, CheckCircle, HourglassEmpty } from '@mui/icons-material';
 import config from '../../config';
@@ -6,9 +6,10 @@ import config from '../../config';
 export default function Dashboard() {
   const [incidents, setIncidents] = useState([]);
   const [statusCounts, setStatusCounts] = useState({ open: 0, closed: 0, inProgress: 0 });
+  const [error, setError] = useState(null);
 
   // Function to fetch incident data
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const token = localStorage.getItem('jwt');
       if (!token) {
@@ -17,8 +18,8 @@ export default function Dashboard() {
 
       const response = await fetch(`${config.API_BASE_URL}/api/incidents/`, {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          'Authorization': `Bearer ${token}`,
+        },
       });
 
       if (!response.ok) {
@@ -30,13 +31,14 @@ export default function Dashboard() {
       calculateStatusCounts(data); // Calculate status counts
     } catch (error) {
       console.error('Error fetching incidents:', error);
+      setError(error.message);
     }
-  };
+  }, []);
 
   // Function to calculate status counts
-  const calculateStatusCounts = (data) => {
+  const calculateStatusCounts = useCallback((data) => {
     const counts = { open: 0, closed: 0, inProgress: 0 };
-    data.forEach(incident => {
+    data.forEach((incident) => {
       if (incident.status === 'Open') {
         counts.open += 1;
       } else if (incident.status === 'Close') {
@@ -46,15 +48,20 @@ export default function Dashboard() {
       }
     });
     setStatusCounts(counts);
-  };
+  }, []);
 
   // Fetch data when the component mounts
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   return (
     <Box sx={{ padding: 2 }}>
+      {error && (
+        <Typography color="error" variant="body1" gutterBottom>
+          {error}
+        </Typography>
+      )}
       <Grid container spacing={3}>
         {/* Card for total incidents */}
         <Grid item xs={12} sm={6} md={4}>
