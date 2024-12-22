@@ -20,8 +20,9 @@ const IncidentForm = () => {
   const [categories, setCategories] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
   const [users, setUsers] = useState([]);
-
-  const [selectedLocation, setSelectedLocation] = useState('');
+  const [observerDescription,setObserverDescription] = useState([]);
+  const[inciDate,setInciDate]  = useState('');
+   const [selectedLocation, setSelectedLocation] = useState('');
   const [selectedType, setSelectedType] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedSubcategory, setSelectedSubcategory] = useState('');
@@ -174,7 +175,9 @@ const IncidentForm = () => {
             ))}
           </Select>
         </FormControl>
-
+        <FormControl fullWidth margin="normal">
+        <InputLabel htmlFor="my-input">Observation Title</InputLabel>
+        </FormControl>
         <FormControl fullWidth margin="normal">
           <InputLabel>Subcategory</InputLabel>
           <Select
