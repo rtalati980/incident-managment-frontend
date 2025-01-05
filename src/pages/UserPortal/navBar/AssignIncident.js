@@ -54,7 +54,7 @@ export default function AssignIncident() {
         throw new Error('JWT token not found');
       }
 
-      const response = await fetch(`${config.API_BASE_URL}/api/auth`, {
+      const response = await fetch(`${config.API_BASE_URL}api/auth`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
 
@@ -104,7 +104,7 @@ export default function AssignIncident() {
         Comment: comments,
       };
 
-      const response = await fetch(`${config.API_BASE_URL}/api/incident-history/`, {
+      const response = await fetch(`${config.API_BASE_URL}api/incident-history/`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

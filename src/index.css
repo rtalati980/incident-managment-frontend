@@ -12,14 +12,3 @@ code {
 }
 
 
-.MuiTabs-root .MuiTab-root {
-  color: blue; /* Base color */
-}
-
-.MuiTabs-root .MuiTab-root:hover {
-  color: white; /* Hover color */
-}
-
-.MuiTabs-root .Mui-selected {
-  color: blue; /* Active tab color */
-}

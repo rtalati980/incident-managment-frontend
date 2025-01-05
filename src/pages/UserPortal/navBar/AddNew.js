@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { jwtDecode } from 'jwt-decode';
+import {jwtDecode} from 'jwt-decode'; // Corrected import
 import {
   TextField,
   Button,
@@ -12,7 +12,7 @@ import {
   Alert,
   Typography,
 } from '@mui/material';
-import config from '../../../config'; // Ensure you have your API_BASE_URL in a separate file
+import config from '../../../config'; // Ensure your API_BASE_URL is correctly defined
 
 const IncidentForm = () => {
   const [locations, setLocations] = useState([]);
@@ -20,15 +20,15 @@ const IncidentForm = () => {
   const [categories, setCategories] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
   const [users, setUsers] = useState([]);
-  const [observerDescription,setObserverDescription] = useState([]);
-  const[inciDate,setInciDate]  = useState('');
-   const [selectedLocation, setSelectedLocation] = useState('');
+  const [observerDescription, setObserverDescription] = useState('');
+  const [inciDate, setInciDate] = useState('');
+  const [inciTime, setInciTime] = useState('');
+  const [selectedLocation, setSelectedLocation] = useState('');
   const [selectedType, setSelectedType] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedSubcategory, setSelectedSubcategory] = useState('');
   const [assignments, setAssignments] = useState([]);
   const [files, setFiles] = useState([]);
-
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -42,7 +42,7 @@ const IncidentForm = () => {
           fetchDataFromAPI('/api/types'),
           fetchDataFromAPI('/api/categories'),
           fetchDataFromAPI('/api/subcategories'),
-          fetchDataFromAPI('/api/auth'),
+          fetchDataFromAPI('/api/auth'), // Corrected endpoint
         ]);
 
         setLocations(locationsData);
@@ -88,18 +88,28 @@ const IncidentForm = () => {
     }
 
     const token = localStorage.getItem('jwt');
+    if (!token) {
+      setErrorMessage('User not authenticated');
+      return;
+    }
+
     const decodedToken = jwtDecode(token);
-    const creatorId = decodedToken.userId;
+    const creatorId = decodedToken.id;
 
     const formData = new FormData();
-    formData.append('location', selectedLocation);
+
+    formData.append('observerDescription',observerDescription);
+    formData.append('inciDate',inciDate);
+    formData.append('inciTime',inciTime);
+    formData.append('workLocation', selectedLocation);
     formData.append('type', selectedType);
     formData.append('category', selectedCategory);
     formData.append('subcategory', selectedSubcategory);
     formData.append('creatorId', creatorId);
     assignments.forEach((id, index) => formData.append(`assignments[${index}]`, id));
     files.forEach((file, index) => formData.append(`files[${index}]`, file));
-
+     
+    console.log("form:",formData);
     try {
       setLoading(true);
       const response = await fetch(`${config.API_BASE_URL}/api/incidents`, {
@@ -111,7 +121,8 @@ const IncidentForm = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to submit incident');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to submit incident');
       }
 
       setSuccessMessage('Incident submitted successfully');
@@ -134,6 +145,7 @@ const IncidentForm = () => {
       {loading && <CircularProgress />}
 
       <form onSubmit={handleSubmit}>
+        {/* Location Field */}
         <FormControl fullWidth margin="normal">
           <InputLabel>Location</InputLabel>
           <Select
@@ -148,6 +160,7 @@ const IncidentForm = () => {
           </Select>
         </FormControl>
 
+        {/* Type Field */}
         <FormControl fullWidth margin="normal">
           <InputLabel>Type</InputLabel>
           <Select
@@ -162,6 +175,7 @@ const IncidentForm = () => {
           </Select>
         </FormControl>
 
+        {/* Category Field */}
         <FormControl fullWidth margin="normal">
           <InputLabel>Category</InputLabel>
           <Select
@@ -175,9 +189,8 @@ const IncidentForm = () => {
             ))}
           </Select>
         </FormControl>
-        <FormControl fullWidth margin="normal">
-        <InputLabel htmlFor="my-input">Observation Title</InputLabel>
-        </FormControl>
+
+        {/* Subcategory Field */}
         <FormControl fullWidth margin="normal">
           <InputLabel>Subcategory</InputLabel>
           <Select
@@ -192,6 +205,38 @@ const IncidentForm = () => {
           </Select>
         </FormControl>
 
+        {/* Observer Description */}
+        <TextField
+          label="Observer Description"
+          fullWidth
+          margin="normal"
+          value={observerDescription}
+          onChange={(e) => setObserverDescription(e.target.value)}
+        />
+
+        {/* Incident Date */}
+        <TextField
+          label="Incident Date"
+          type="date"
+          fullWidth
+          margin="normal"
+          value={inciDate}
+          onChange={(e) => setInciDate(e.target.value)}
+          InputLabelProps={{ shrink: true }}
+        />
+
+        {/* Incident Time */}
+        <TextField
+          label="Incident Time"
+          type="time"
+          fullWidth
+          margin="normal"
+          value={inciTime}
+          onChange={(e) => setInciTime(e.target.value)}
+          InputLabelProps={{ shrink: true }}
+        />
+
+        {/* Assign Users */}
         <TextField
           label="Assign Users"
           fullWidth
@@ -206,6 +251,7 @@ const IncidentForm = () => {
           ))}
         </TextField>
 
+        {/* File Upload */}
         <input
           type="file"
           multiple
@@ -213,6 +259,7 @@ const IncidentForm = () => {
           style={{ margin: '20px 0' }}
         />
 
+        {/* Submit Button */}
         <Button
           type="submit"
           variant="contained"
@@ -222,6 +269,7 @@ const IncidentForm = () => {
           Submit
         </Button>
 
+        {/* Error and Success Messages */}
         {errorMessage && (
           <Snackbar open autoHideDuration={6000} onClose={() => setErrorMessage('')}>
             <Alert severity="error">{errorMessage}</Alert>

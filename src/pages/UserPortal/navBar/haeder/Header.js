@@ -6,8 +6,9 @@ import MenuIcon from '@mui/icons-material/Menu';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import NotificationsNoneRoundedIcon from '@mui/icons-material/NotificationsNoneRounded';
 import { jwtDecode } from 'jwt-decode';
-import logoImg  from '../../../../png/knor.PNG';
+import logoImg from '../../../../png/knor.PNG';
 import config from '../../../../config';
+import './header.css';
 
 export default function Header() {
   const [userName, setUserName] = useState('');
@@ -46,7 +47,6 @@ export default function Header() {
     fetchData();
   }, []);
 
-  // Set active tab based on the current route
   useEffect(() => {
     const pathToTabIndex = {
       '/user-panel/': 0,
@@ -84,32 +84,17 @@ export default function Header() {
   };
 
   return (
-    <AppBar position="static" style={{ background:"#fff" , color:"#5b5b5b"  }}>
-      <Toolbar>
-        {/* Logo or Title */}
-
-        <img src={logoImg} alt='asdf'  style={{width:'280px'}}/> 
-        <Typography variant="h6" sx={{ flexGrow: 1, color: '#5b5b5b' }}>
-        </Typography>
-
-        {/* User Info */}
-        <Typography variant="body1" sx={{ marginRight: 2, color: '#04507e' }}>
+    <AppBar position="static" className="custom-appbar">
+      <Toolbar className="custom-toolbar">
+        <img src={logoImg} alt="Logo" className="custom-logo" />
+        <Typography variant="h6" sx={{ flexGrow: 1 }} />
+        <Typography variant="body1" className="custom-user-info">
           {role} - {userName}
         </Typography>
-
-        {/* Account Icon with Menu */}
-        <IconButton
-          size="large"
-          edge="end"
-          color="inherit"
-          aria-label="account of current user"
-          onClick={handleMenuOpen}
-        >
-          <AccountCircle  sx={{color:"#00457e"}}/>
-         
+        <IconButton onClick={handleMenuOpen}>
+          <AccountCircle className="custom-account-icon" />
         </IconButton>
-
-        <NotificationsNoneRoundedIcon sx={{ color: '#00457E' }} />
+        <NotificationsNoneRoundedIcon className="custom-notification-icon" />
         <Menu
           id="account-menu"
           anchorEl={anchorEl}
@@ -128,25 +113,18 @@ export default function Header() {
           <MenuItem onClick={handleLogout}>Logout</MenuItem>
         </Menu>
       </Toolbar>
-
-      {/* Navigation Tabs */}
       <Tabs
         value={tabValue}
         onChange={handleTabChange}
         aria-label="User Panel Navigation"
-        textColor="inherit"
-        indicatorColor="primary"
-        variant="scrollable"
-        sx={{color:"#00457E" , padding:"0 40px"}}
+        className="custom-tabs"
       >
-      
-        <Tab label="DASHBOARD" />
-        <Tab label="REPORT INCIDENT" />
-        <Tab label="INCIDENT HISTORY" />
-        <Tab label="PROFILE" />
-        <Tab label="ASSIGN INCIDENT" />
+        <Tab label="DASHBOARD" className="custom-tab" />
+        <Tab label="REPORT INCIDENT" className="custom-tab" />
+        <Tab label="INCIDENT HISTORY" className="custom-tab" />
+        <Tab label="PROFILE" className="custom-tab" />
+        <Tab label="ASSIGN INCIDENT" className="custom-tab" />
       </Tabs>
     </AppBar>
   );
 }
-

@@ -82,12 +82,16 @@ export default function ManageEntities() {
 
   const handleSubcategorySubmit = (event) => {
     event.preventDefault();
-    if (subcategoryName.trim() !== '' && selectedCategoryId.trim() !== '') {
+  
+    // Ensure selectedCategoryId is a string
+    const categoryId = selectedCategoryId ? String(selectedCategoryId).trim() : '';
+  
+    if (subcategoryName.trim() !== '' && categoryId !== '') {
       const method = editingSubcategoryId ? 'PUT' : 'POST';
       const url = editingSubcategoryId
         ? `${config.API_BASE_URL}/api/subcategories/${editingSubcategoryId}`
         : `${config.API_BASE_URL}/api/subcategories`;
-
+  
       fetch(url, {
         method,
         headers: {
@@ -95,7 +99,7 @@ export default function ManageEntities() {
         },
         body: JSON.stringify({
           name: subcategoryName,
-          category_id: selectedCategoryId,
+          category_id: categoryId,
         }),
       })
         .then((response) => response.json())
@@ -116,6 +120,7 @@ export default function ManageEntities() {
         .catch((error) => console.error('Error:', error));
     }
   };
+  
 
   const handleCategoryEdit = (id, name) => {
     setEditingCategoryId(id);
