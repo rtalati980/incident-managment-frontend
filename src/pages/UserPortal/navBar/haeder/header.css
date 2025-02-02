@@ -1,49 +1,17 @@
-/* Header.css */
+.custom-toolbar img {
+  max-width: 350px;
+}
 
-/* Override AppBar styles */
-.custom-appbar {
-    background-color: #fff !important;
-    padding: 20px 40px 0px 59px ;
-    box-shadow: none ;
-  }
-  
-  /* Logo styles */
-  .custom-logo {
-    width: 280px ;
-  }
-  
-  /* Toolbar styles */
-  .custom-toolbar {
-    display: flex;
-    justify-content: space-between !important;
-    align-items: center !important;
-  }
-  
-  /* User info styles */
-  .custom-user-info {
-    color: #04507e !important;
-    margin-right: 20px !important;
-  }
-  
-  /* Icon styles */
-  .custom-account-icon {
-    color: #00457e !important;
-  }
-  
-  .custom-notification-icon {
-    color: #00457e !important;
-  }
-  
-  /* Tabs styles */
-  .custom-tabs .MuiTabs-indicator {
-    background-color: #00457e ;
-    display: grid;
-    grid-column: 50px;
-  }
-  
-  .custom-tab {
-    color: #00457e !important;
-    font-weight: bold ;
-    text-transform: uppercase;
-  }
-  
+
+
+.css-1wxkzlj-MuiTabs-flexContainer {
+  justify-content: space-between;
+}
+
+.css-2ue31k-MuiToolbar-root {
+  gap: 30px;
+}
+
+.MuiTab-root:hover {
+  background: #e2e2e2;
+}

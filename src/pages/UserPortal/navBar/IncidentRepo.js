@@ -1,185 +1,73 @@
-import React, { useState, useEffect } from 'react';
-import './incidentRepo.css'; // Import the CSS file
-import { Link } from 'react-router-dom';
-import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import config from '../../../config';
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { DataGrid } from "@mui/x-data-grid";
+import Paper from "@mui/material/Paper";
+import Button from "@mui/material/Button";
+import config from "../../../config";
+
+const columns = [
+  { field: "No", headerName: "No", width: 100 },
+  { field: "observerDescription", headerName: "Observer Description", width: 200 },
+  { field: "repoDate", headerName: "Reported Date", width: 130 },
+  { field: "workLocation", headerName: "Work Location", width: 130 },
+  { field: "inciDate", headerName: "Incident Date", width: 130 },
+  { field: "inciTime", headerName: "Incident Time", width: 130 },
+  { field: "status", headerName: "Status", width: 100 },
+  { field: "category", headerName: "Category", width: 120 },
+  { field: "subCategory", headerName: "Subcategory", width: 120 },
+  {field:"assignedUsers",hesder:"Assigned user",width:50},
+  {
+    field: "action",
+    headerName: "Track",
+    width: 100,
+    renderCell: (params) => (
+      <Button variant="contained" size="small" color="primary">
+        <Link
+          to={`/user-panel/incident/${params.row.No}`}
+          style={{ color: "white", textDecoration: "none" }}
+        >
+          Track
+        </Link>
+      </Button>
+    ),
+  },
+];
 
 export default function IncidentRepo() {
   const [incidents, setIncidents] = useState([]);
-  const [filteredIncidents, setFilteredIncidents] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [openPanels, setOpenPanels] = useState({});
-  
-  // Function to fetch incident data
-  const fetchData = async () => {
-    try {
-      const token = localStorage.getItem('jwt');
-      if (!token) {
-        throw new Error('JWT token not found');
-      }
 
-      const response = await fetch(`${config.API_BASE_URL}/api/incidents/id/getuser`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch incidents');
-      }
-
-      const data = await response.json();
-
-      // Update the state with fetched data
-      setIncidents(data);
-      setFilteredIncidents(data); // Initially show all incidents
-
-      // Fetch additional data for each incident
-      const updatedData = await Promise.all(data.map(async incident => {
-        // Fetch workLocation data
-        const workLocationResponse = await fetch(`${config.API_BASE_URL}/api/workLocations/name/${incident.workLocation}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        const workLocationData = await workLocationResponse.json();
-        
-        // Fetch user data
-        const userResponse = await fetch(`${config.API_BASE_URL}/api/auth/id/${incident.userId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        const userData = await userResponse.json();
-      
-        return {
-          ...incident,
-          workLocationType: workLocationData.type,
-          username: userData.username,
-          email: userData.email
-        };
-      }));
-
-      setIncidents(updatedData);
-      setFilteredIncidents(updatedData);
-    } catch (error) {
-      console.error('Error fetching incidents:', error);
-    }
-  };
-
-  // Fetch data when the component mounts
   useEffect(() => {
     fetchData();
   }, []);
 
-  // Handle search input change
-  const handleSearchChange = (e) => {
-    const query = e.target.value;
-    setSearchQuery(query);
-    filterIncidents(query, statusFilter);
-  };
+  const fetchData = async () => {
+    try {
+      const token = localStorage.getItem("jwt");
+      if (!token) throw new Error("JWT token not found");
 
-  // Handle status filter change
-  const handleStatusChange = (e) => {
-    const status = e.target.value;
-    setStatusFilter(status);
-    filterIncidents(searchQuery, status);
-  };
+      const response = await fetch(`${config.API_BASE_URL}/api/incidents/id/getuser`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-  const filterIncidents = (query, status) => {
-    let filtered = incidents;
+      if (!response.ok) throw new Error("Failed to fetch incidents");
 
-    if (query) {
-      filtered = filtered.filter(incident => incident.id.toString().includes(query));
+      const data = await response.json();
+      setIncidents(data);
+    } catch (error) {
+      console.error("Error fetching incidents:", error);
     }
-
-    if (status) {
-      filtered = filtered.filter(incident => incident.status === status);
-    }
-
-    setFilteredIncidents(filtered);
-  };
-
-  // Function to toggle the accordion panels
-  const toggleAccordion = (index) => {
-    setOpenPanels(prevOpenPanels => ({
-      ...prevOpenPanels,
-      [index]: !prevOpenPanels[index]
-    }));
   };
 
   return (
-    <div>
-      <div className="incident-container">
-        <h2>Incident Data</h2>
-        
-        <input
-          type="text"
-          placeholder="Search by Ticket No."
-          value={searchQuery}
-          onChange={handleSearchChange}
-          className="search-input"
-        />
-        
-        <select value={statusFilter} onChange={handleStatusChange} className="status-select">
-          <option value="">All Statuses</option>
-          <option value="Open">Open</option>
-          <option value="Close">Closed</option>
-          <option value="in progress">In Progress</option>
-        </select>
-
-        {filteredIncidents.map((incident, index) => (
-          <div key={incident.id}>
-            <button className="accordion" onClick={() => toggleAccordion(index)}>
-              {incident.No}: {incident.workLocation} 
-              {openPanels[index] ? (
-                <ArrowDropUpIcon style={{ color: 'white', marginLeft:'40px', fontSize: '40px', cursor: 'pointer' }} />
-              ) : (
-                <ArrowDropDownIcon style={{ color: 'white', marginLeft:'40px', fontSize: '40px', cursor: 'pointer' }} />
-              )}
-            </button>
-            <div id={`panel-${index}`} className="panel" style={{ display: openPanels[index] ? 'block' : 'none' }}>
-              <table className="incident-details-table">
-                <thead>
-                  <tr>
-                    <th>No.</th>
-                    <th>Bay</th>
-                    <th>Observer Description</th>
-                    <th>Type</th>
-                    <th>Category</th>
-                    <th>Sub Category</th>
-                    <th>Status</th>
-                    <th>Action Taken</th>
-                    <th>Work Location Type</th>
-                    <th>Username</th>
-                    <th>Email</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>{incident.No}</td>
-                    <td>{incident.workLocation}</td>
-                    <td>{incident.observerDescription}</td>
-                    <td>{incident.type}</td>
-                    <td>{incident.category}</td>
-                    <td>{incident.subcategory}</td>
-                    <td>{incident.status}</td>
-                    <td>{incident.actionTaken}</td>
-                    <td>{incident.workLocationType}</td>
-                    <td>{incident.username}</td>
-                    <td>{incident.email}</td>
-                  </tr>
-                </tbody>
-              </table>
-              <Link to={`/user-panel/incident/id/${incident.id}`} className="track-button">
-                Track
-              </Link>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
+    <Paper sx={{ height: 600,  padding: "20px  70px" }}>
+      <DataGrid
+        rows={incidents}
+        columns={columns}
+        pageSizeOptions={[5, 10]}
+        checkboxSelection={false}
+        getRowId={(row) => row.No}
+        sx={{ border: 0 }}
+      />
+    </Paper>
   );
 }

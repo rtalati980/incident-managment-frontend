@@ -1,8 +1,44 @@
 import React, { useState, useEffect } from 'react';
-import './incidentRepo.css'; // Import the CSS file
+import './incidentRepo.css';
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import Paper from "@mui/material/Paper";
 import config from '../../../config';
+import { Link } from "react-router-dom";
+import Button from "@mui/material/Button";
+
+// Handle row click
+const handleOpenRows = (row) => {
+  console.log("Row clicked:", row);
+};
+
+const columns: GridColDef[] = [
+  { field: "No", headerName: "No", width: 200 }, // Ensure `id` is present
+  { field: "observerDescription", headerName: "Observer Description", width: 130 },
+  { field: "repoDate", headerName: "Reported Date", width: 130 },
+  { field: "workLocation", headerName: "Work Location", width: 90 },
+  { field: "inciDate", headerName: "Incident Date", width: 100 },
+  { field: "inciTime", headerName: "Incident Time", width: 90 },
+  { field: "status", headerName: "Status", width: 70 },
+  { field: "category", headerName: "Category", width: 60 },
+  { field: "subCategory", headerName: "Sub Category", width: 60 },
+  {
+    field: "action",
+    headerName: "Track",
+    width: 100,
+    renderCell: (params) => (
+      <Button variant="contained" size="small" color="primary">
+        <Link
+          to={`/user-panel/incident/action/${params.row.No}`}
+          style={{ color: "white", textDecoration: "none" }}
+        >
+          Track
+        </Link>
+      </Button>
+    ),
+  },
+];
 
 export default function AssignIncident() {
   const [incidents, setIncidents] = useState([]);
@@ -29,16 +65,17 @@ export default function AssignIncident() {
       if (!token) {
         throw new Error('JWT token not found');
       }
-
       const response = await fetch(`${config.API_BASE_URL}/api/incidents/assignto/getuser`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
-
       if (!response.ok) {
         throw new Error('Failed to fetch incidents');
       }
+      let data = await response.json();
 
-      const data = await response.json();
+      // Ensure each row has a unique `id` for DataGrid
+      data = data.map((item, index) => ({ id: item.id || index + 1, ...item }));
+
       setIncidents(data);
       setFilteredIncidents(data);
     } catch (error) {
@@ -53,15 +90,12 @@ export default function AssignIncident() {
       if (!token) {
         throw new Error('JWT token not found');
       }
-
-      const response = await fetch(`${config.API_BASE_URL}api/auth`, {
+      const response = await fetch(`${config.API_BASE_URL}/api/auth`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
-
       if (!response.ok) {
         throw new Error('Failed to fetch assignees');
       }
-
       const data = await response.json();
       setAssignees(data);
     } catch (error) {
@@ -96,15 +130,13 @@ export default function AssignIncident() {
       if (!token) {
         throw new Error('JWT token not found');
       }
-
       const actionData = {
         IncidentID: incidentId,
         NewStatus: selectedStatus,
         NewAssigneeID: selectedAssignee,
         Comment: comments,
       };
-
-      const response = await fetch(`${config.API_BASE_URL}api/incident-history/`, {
+      const response = await fetch(`${config.API_BASE_URL}/api/incident-history/`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -112,11 +144,9 @@ export default function AssignIncident() {
         },
         body: JSON.stringify(actionData),
       });
-
       if (!response.ok) {
         throw new Error('Failed to update incident history');
       }
-
       console.log(`Action taken for incident with ID ${incidentId}`);
     } catch (error) {
       console.error('Error updating incident history:', error);
@@ -124,104 +154,14 @@ export default function AssignIncident() {
   };
 
   return (
-    <div className="incident-container">
-      <h2>Incident Management</h2>
-
-      {/* Search Bar */}
-      <input
-        type="text"
-        placeholder="Search by Ticket No."
-        value={searchQuery}
-        onChange={handleSearchChange}
-        className="search-input"
+    <Paper sx={{ height: 600, width: "100%", padding: "20px 70px" }}>
+      <DataGrid
+        rows={filteredIncidents}
+        columns={columns}
+        pageSizeOptions={[5, 10]}
+        checkboxSelection={false}
+        sx={{ border: 0 }}
       />
-
-      {/* Incident List */}
-      <table className="incident-table">
-        <thead>
-          <tr>
-            <th>No.</th>
-            <th>Bay</th>
-            <th>Observer Description</th>
-            <th>Type</th>
-            <th>Category</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-      </table>
-
-      {filteredIncidents.map((incident, index) => (
-        <div key={incident.id}>
-          <button className="accordion" onClick={() => toggleArrow(index)}>
-            {incident.id}: {incident.workLocation} : {incident.userId}
-            {isArrowUp ? (
-              <ArrowDropUpIcon style={{ color: 'white', fontSize: '40px', cursor: 'pointer' }} />
-            ) : (
-              <ArrowDropDownIcon style={{ color: 'white', fontSize: '40px', cursor: 'pointer' }} />
-            )}
-          </button>
-          <div id={`panel-${index}`} className="panel">
-            <table className="incident-table">
-              <tbody>
-                <tr>
-                  <th>No.</th>
-                  <td>{incident.id}</td>
-                </tr>
-                <tr>
-                  <th>Bay</th>
-                  <td>{incident.workLocation}</td>
-                </tr>
-                <tr>
-                  <th>Observer Description</th>
-                  <td>{incident.observerDescription}</td>
-                </tr>
-                <tr>
-                  <th>Type</th>
-                  <td>{incident.type}</td>
-                </tr>
-                <tr>
-                  <th>Category</th>
-                  <td>{incident.category}</td>
-                </tr>
-                <tr>
-                  <th>Status</th>
-                  <td>{incident.status}</td>
-                </tr>
-              </tbody>
-            </table>
-            {/* Dropdowns and Action */}
-            <div className="action-container">
-              <select onChange={(e) => setSelectedStatus(e.target.value)} value={selectedStatus}>
-                <option value="">Select Status</option>
-                {statusOptions.map((status) => (
-                  <option key={status} value={status}>
-                    {status}
-                  </option>
-                ))}
-              </select>
-
-              <select onChange={(e) => setSelectedAssignee(e.target.value)} value={selectedAssignee}>
-                <option value="">Select Assignee</option>
-                {assignees.map((assignee) => (
-                  <option key={assignee.id} value={assignee.id}>
-                    {assignee.name}
-                  </option>
-                ))}
-              </select>
-
-              <input
-                type="text"
-                placeholder="Comments"
-                onChange={(e) => setComments(e.target.value)}
-                value={comments}
-              />
-
-              <button onClick={() => handleAction(incident.id)}>Take Action</button>
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
+    </Paper>
   );
 }

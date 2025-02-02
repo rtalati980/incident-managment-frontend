@@ -13,19 +13,22 @@ import {
   Typography,
 } from '@mui/material';
 import Select from 'react-select';
-import config from  '../../../config';
+import config from '../../../config';
 
 export default function Wrklctn() {
   const [name, setName] = useState('');
   const [bayType, setBayType] = useState('');
   const [locations, setLocations] = useState([]);
   const [editingId, setEditingId] = useState(null);
-  const [users, setUsers] = useState([]);
+  const [bayTypes, setBayTypes] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedBayType, setSelectedBayType] = useState(null);
+  const [users, setUsers] = useState([]);
 
   useEffect(() => {
     fetchLocations();
     fetchUsers();
+    fetchBayTypes();
   }, []);
 
   const fetchLocations = async () => {
@@ -38,7 +41,7 @@ export default function Wrklctn() {
         locationData.map(async (location) => {
           if (location.UserID) {
             const userResponse = await fetch(
-              `$API_BASE_URL/api/auth/${location.UserID}`
+              `${config.API_BASE_URL}/api/auth/${location.UserID}`
             );
             if (userResponse.ok) {
               const userData = await userResponse.json();
@@ -80,6 +83,23 @@ export default function Wrklctn() {
     }
   };
 
+  const fetchBayTypes = async () => {
+    try {
+      const response = await fetch(`${config.API_BASE_URL}/api/baytypes`);
+      if (!response.ok) throw new Error('Failed to fetch bay types');
+      const bayTypeData = await response.json();
+
+      const bayTypeOptions = bayTypeData.map((bayType) => ({
+        value: bayType.id,
+        label: bayType.name,
+      }));
+
+      setBayTypes(bayTypeOptions);
+    } catch (error) {
+      console.error('Error fetching bay types:', error);
+    }
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     const method = editingId ? 'PUT' : 'POST';
@@ -89,7 +109,7 @@ export default function Wrklctn() {
 
     const requestBody = {
       name,
-      bayType,
+      bayType: selectedBayType ? selectedBayType.value : null,
       UserID: selectedUser ? selectedUser.value : null,
     };
 
@@ -112,7 +132,7 @@ export default function Wrklctn() {
       }
 
       setName('');
-      setBayType('');
+      setSelectedBayType(null);
       setSelectedUser(null);
       setEditingId(null);
     } catch (error) {
@@ -123,13 +143,13 @@ export default function Wrklctn() {
   const handleEdit = (id) => {
     const location = locations.find((loc) => loc.id === id);
     setName(location.name);
-    setBayType(location.bayType);
+    setSelectedBayType({ value: location.bayTypeId, label: location.bayType });
     setEditingId(id);
   };
 
   const handleDelete = async (id) => {
     try {
-      await fetch(`$API_BASE_URL/api/wrklctns/${id}`, {
+      await fetch(`${config.API_BASE_URL}/api/wrklctns/${id}`, {
         method: 'DELETE',
       });
       setLocations((prevLocations) =>
@@ -144,10 +164,14 @@ export default function Wrklctn() {
     setSelectedUser(selectedUser);
   };
 
+  const handleBayTypeSelect = (selectedBayType) => {
+    setSelectedBayType(selectedBayType);
+  };
+
   return (
     <Box p={3}>
       <Typography variant="h4" gutterBottom>
-        Manage Locations
+        Manage Locations and Bay Types
       </Typography>
 
       <Paper elevation={3} sx={{ padding: 2, marginBottom: 4 }}>
@@ -159,15 +183,19 @@ export default function Wrklctn() {
               onChange={(e) => setName(e.target.value)}
               fullWidth
             />
-            <TextField
-              label="Bay Type"
-              value={bayType}
-              onChange={(e) => setBayType(e.target.value)}
-              fullWidth
-            />
+            <Box flex={1} minWidth="200px">
+              <Select
+                options={bayTypes}
+                value={selectedBayType}
+                onChange={handleBayTypeSelect}
+                placeholder="Select a Bay Type"
+                isSearchable
+              />
+            </Box>
             <Box flex={1} minWidth="200px">
               <Select
                 options={users}
+                value={selectedUser}
                 onChange={handleUserSelect}
                 placeholder="Select a user"
                 isSearchable

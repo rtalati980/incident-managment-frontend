@@ -10,6 +10,7 @@ import Profile from './navBar/Profile';
 import AssignIncident from './navBar/AssignIncident';
 import IncidentHistory from './navBar/IncidentHistory';
 import IncidentDetail from './navBar/IncidentDetail';
+import IncidentDetailsAction from './navBar/IncidentDetailsAction';
 import Exp from './Exp';
 
 
@@ -25,7 +26,8 @@ const UserRoutes = ({email}) => {
       <Route path="/profile" element={<Profile />} />
       <Route path='/assignincdent' element={<AssignIncident />}/>
       <Route path='/incdentHistory' element ={<IncidentHistory/>}/>
-      <Route path="/incident/id/:id" element={<IncidentDetail/>} />
+      <Route path="/incident/:No" element={<IncidentDetail/>} />
+      <Route path="/incident/action/:No" element={<IncidentDetailsAction/>} />
       <Route path="/exp/"  element={<Exp/>} />
       </Routes>
     </div>

@@ -6,7 +6,7 @@ import './incidentRepo.css';
 import config from '../../../config';
 
 function IncidentDetail() {
-  const { id } = useParams();
+  const { No } = useParams();
   const [incident, setIncident] = useState(null);
   const [historyData, setHistoryData] = useState([]);
 
@@ -18,7 +18,7 @@ function IncidentDetail() {
           throw new Error('JWT token not found');
         }
 
-        const response = await fetch(`${config.API_BASE_URL}/api/incidents/${id}`, {
+        const response = await fetch(`${config.API_BASE_URL}/api/incidents/No/${No}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
@@ -34,7 +34,9 @@ function IncidentDetail() {
         console.error('Error fetching incident:', error);
       }
     };
-
+   
+    console.log(incident.id);
+    
     const fetchIncidentHistory = async () => {
       try {
         const token = localStorage.getItem('jwt');
@@ -42,7 +44,7 @@ function IncidentDetail() {
           throw new Error('JWT token not found');
         }
 
-        const response = await fetch(`${config.API_BASE_URL}/api/incident-history/${id}`, {
+        const response = await fetch(`${config.API_BASE_URL}/api/incident-history/incident/${incident.id}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
@@ -61,14 +63,16 @@ function IncidentDetail() {
 
     fetchIncident();
     fetchIncidentHistory();
-  }, [id]);
+  }, [No]);
+
+  console.log("uwsnwqwu",historyData[0]);
 
   if (!incident) {
     return <div>Loading...</div>;
   }
 
   return (
-    <div>
+    <div style={{padding:"20px  70px"}}>
       <h2>Incident Detail - {incident.No}</h2>
       <table className="incident-table">
         <tbody>
