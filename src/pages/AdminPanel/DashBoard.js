@@ -1,12 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, Typography, Grid, Box } from '@mui/material';
-import { AccessAlarm, CheckCircle, HourglassEmpty } from '@mui/icons-material';
+import { Bar, Pie } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
 import config from '../../config';
+
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement);
 
 export default function Dashboard() {
   const [incidents, setIncidents] = useState([]);
   const [statusCounts, setStatusCounts] = useState({ open: 0, closed: 0, inProgress: 0 });
   const [error, setError] = useState(null);
+  const [analytics, setAnalytics] = useState({ mostFrequentDay: '', mostReportedCategory: '', statusCounts: {} });
 
   // Function to fetch incident data
   const fetchData = useCallback(async () => {
@@ -27,33 +31,61 @@ export default function Dashboard() {
       }
 
       const data = await response.json();
-      setIncidents(data); // Update the state with fetched data
-      calculateStatusCounts(data); // Calculate status counts
+      setIncidents(data);
+      calculateAnalytics(data);
     } catch (error) {
       console.error('Error fetching incidents:', error);
       setError(error.message);
     }
   }, []);
 
-  // Function to calculate status counts
-  const calculateStatusCounts = useCallback((data) => {
-    const counts = { open: 0, closed: 0, inProgress: 0 };
+  // Function to analyze incident data
+  const calculateAnalytics = useCallback((data) => {
+    const dateCounts = {};
+    const categoryCounts = {};
+    const statusCounts = { Open: 0, Closed: 0, InProgress: 0 };
+
     data.forEach((incident) => {
-      if (incident.status === 'Open') {
-        counts.open += 1;
-      } else if (incident.status === 'Close') {
-        counts.closed += 1;
-      } else if (incident.status === 'InProgress') {
-        counts.inProgress += 1;
+      dateCounts[incident.inciDate] = (dateCounts[incident.inciDate] || 0) + 1;
+      categoryCounts[incident.category] = (categoryCounts[incident.category] || 0) + 1;
+      if (statusCounts[incident.status] !== undefined) {
+        statusCounts[incident.status] += 1;
       }
     });
-    setStatusCounts(counts);
+
+    const mostFrequentDay = Object.keys(dateCounts).reduce((a, b) => (dateCounts[a] > dateCounts[b] ? a : b), '');
+    const mostReportedCategory = Object.keys(categoryCounts).reduce((a, b) => (categoryCounts[a] > categoryCounts[b] ? a : b), '');
+
+    setAnalytics({ mostFrequentDay, mostReportedCategory, statusCounts });
+    setStatusCounts(statusCounts);
   }, []);
 
-  // Fetch data when the component mounts
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // Bar Chart for Incidents by Date
+  const barData = {
+    labels: Object.keys(analytics.statusCounts),
+    datasets: [
+      {
+        label: 'Incidents by Status',
+        data: Object.values(analytics.statusCounts),
+        backgroundColor: ['#FFA500', '#008000', '#FFD700'],
+      },
+    ],
+  };
+
+  // Pie Chart for Status Distribution
+  const pieData = {
+    labels: ['Open', 'Closed', 'In Progress'],
+    datasets: [
+      {
+        data: [statusCounts.Open, statusCounts.Closed, statusCounts.InProgress],
+        backgroundColor: ['#FFA500', '#008000', '#FFD700'],
+      },
+    ],
+  };
 
   return (
     <Box sx={{ padding: 2 }}>
@@ -63,7 +95,7 @@ export default function Dashboard() {
         </Typography>
       )}
       <Grid container spacing={3}>
-        {/* Card for total incidents */}
+        {/* Incident Summary Cards */}
         <Grid item xs={12} sm={6} md={4}>
           <Card>
             <CardContent>
@@ -74,34 +106,47 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </Grid>
-
-        {/* Card for status counts */}
         <Grid item xs={12} sm={6} md={4}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                STATUS
+                Most Frequent Incident Day
               </Typography>
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={4}>
-                  <Box display="flex" alignItems="center">
-                    <AccessAlarm sx={{ color: 'orange', marginRight: 1 }} />
-                    <Typography variant="body1">Open: {statusCounts.open}</Typography>
-                  </Box>
-                </Grid>
-                <Grid item xs={12} sm={4}>
-                  <Box display="flex" alignItems="center">
-                    <CheckCircle sx={{ color: 'green', marginRight: 1 }} />
-                    <Typography variant="body1">Closed: {statusCounts.closed}</Typography>
-                  </Box>
-                </Grid>
-                <Grid item xs={12} sm={4}>
-                  <Box display="flex" alignItems="center">
-                    <HourglassEmpty sx={{ color: 'yellow', marginRight: 1 }} />
-                    <Typography variant="body1">In Progress: {statusCounts.inProgress}</Typography>
-                  </Box>
-                </Grid>
-              </Grid>
+              <Typography variant="h5">{analytics.mostFrequentDay}</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={4}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Most Reported Category
+              </Typography>
+              <Typography variant="h5">{analytics.mostReportedCategory}</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Bar Chart */}
+        <Grid item xs={12} md={6}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Incidents by Status
+              </Typography>
+              <Bar data={barData} />
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Pie Chart */}
+        <Grid item xs={12} md={6}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Status Distribution
+              </Typography>
+              <Pie data={pieData} />
             </CardContent>
           </Card>
         </Grid>

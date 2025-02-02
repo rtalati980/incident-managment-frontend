@@ -12,6 +12,7 @@ import IncidentReports from './navBar/IncidentReports';
 import Dashboard from './DashBoard';
 import Profile from './navBar/Profile';
 import AddUser from './navBar/Users';
+import IncidentDetailAction from './navBar/IncidentDetailAction';
 
 const UserRoutes = () => {
   return (
@@ -20,6 +21,7 @@ const UserRoutes = () => {
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/wrklctn" element={<Wrklctn />} />
+        <Route path="/incident/:No/:id" element={<IncidentDetailAction/>} />
         <Route path="/typeAdd" element={<TypeAdd />} />
         <Route path="/severity" element={<Severity />} />
         <Route path="/manageEntities" element={<ManageEntities />} />

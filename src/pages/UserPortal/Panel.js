@@ -26,7 +26,7 @@ const UserRoutes = ({email}) => {
       <Route path="/profile" element={<Profile />} />
       <Route path='/assignincdent' element={<AssignIncident />}/>
       <Route path='/incdentHistory' element ={<IncidentHistory/>}/>
-      <Route path="/incident/:No" element={<IncidentDetail/>} />
+      <Route path="/incident/:No/:id" element={<IncidentDetail/>} />
       <Route path="/incident/action/:No" element={<IncidentDetailsAction/>} />
       <Route path="/exp/"  element={<Exp/>} />
       </Routes>

@@ -2,10 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Timeline, TimelineItem, TimelineSeparator, TimelineConnector, TimelineContent, TimelineDot } from '@mui/lab';
 import { Paper, Typography } from '@mui/material';
-import './incidentRepo.css';
 import config from '../../../config';
 
-function IncidentDetail() {
+function IncidentDetailAction() {
   const { No } = useParams();
   const [incident, setIncident] = useState(null);
   const [historyData, setHistoryData] = useState([]);
@@ -146,4 +145,4 @@ function IncidentDetail() {
   );
 }
 
-export default IncidentDetail;
+export default IncidentDetailAction;
