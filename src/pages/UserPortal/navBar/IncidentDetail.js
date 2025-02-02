@@ -6,7 +6,7 @@ import './incidentRepo.css';
 import config from '../../../config';
 
 function IncidentDetail() {
-  const { No } = useParams();
+  const { No,id } = useParams();
   const [incident, setIncident] = useState(null);
   const [historyData, setHistoryData] = useState([]);
 

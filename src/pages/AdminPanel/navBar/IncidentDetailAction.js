@@ -5,7 +5,7 @@ import { Paper, Typography } from '@mui/material';
 import config from '../../../config';
 
 function IncidentDetailAction() {
-  const { No } = useParams();
+  const { No,id } = useParams();
   const [incident, setIncident] = useState(null);
   const [historyData, setHistoryData] = useState([]);
 
