@@ -163,7 +163,7 @@ const IncidentForm = () => {
             >
               
               {locations.map((loc) => (
-                <MenuItem key={loc.id} value={loc.id}>
+                <MenuItem key={loc.id} value={loc.name}>
                   
                   {loc.name}
                 </MenuItem>
@@ -181,7 +181,7 @@ const IncidentForm = () => {
             >
              
               {types.map((type) => (
-                <MenuItem key={type.id} value={type.id}>
+                <MenuItem key={type.id} value={type.name}>
                   
                   {type.name}
                 </MenuItem>
@@ -190,40 +190,44 @@ const IncidentForm = () => {
           </FormControl>
           {/* Category Field */}
           <FormControl sx={{ minWidth: "250px" }} margin="normal">
-            
-            <InputLabel>Category</InputLabel>
-            <Select
-              label="Category"
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-            >
-             
-              {categories.map((cat) => (
-                <MenuItem key={cat.id} value={cat.id}>
-                  
-                  {cat.name}
-                </MenuItem>
-              ))}
-            </Select>  
-          </FormControl>  
-          {/* Subcategory Field */}  
-          <FormControl sx={{ minWidth: "250px" }} margin="normal">
-              
-            <InputLabel>Subcategory</InputLabel>  
-            <Select
-              label="Subcategory"
-              value={selectedSubcategory}
-              onChange={(e) => setSelectedSubcategory(e.target.value)}
-            >
-                
-              {subcategories.map((sub) => (
-                <MenuItem key={sub.id} value={sub.id}>
-                    
-                  {sub.name}  
-                </MenuItem>
-              ))}  
-            </Select>  
-          </FormControl>  
+  <InputLabel>Category</InputLabel>
+  <Select
+    label="Category"
+    value={selectedCategory}
+    onChange={(e) => {
+      setSelectedCategory(e.target.value);
+      // Optionally reset the subcategory when the category changes
+      setSelectedSubcategory('');
+    }}
+  >
+    {categories.map((cat) => (
+      <MenuItem key={cat.id} value={cat.id}>
+        {cat.name}
+      </MenuItem>
+    ))}
+  </Select>
+</FormControl>
+
+{/* Subcategory Field */}
+<FormControl sx={{ minWidth: "250px" }} margin="normal">
+  <InputLabel>Subcategory</InputLabel>
+  <Select
+    label="Subcategory"
+    value={selectedSubcategory}
+    onChange={(e) => setSelectedSubcategory(e.target.value)}
+    // Disable the subcategory select if no category is selected
+    disabled={!selectedCategory}
+  >
+    {subcategories
+      // Filter subcategories based on the selected category id
+      .filter((sub) => sub.category_id === selectedCategory)
+      .map((sub) => (
+        <MenuItem key={sub.id} value={sub.name}>
+          {sub.name}
+        </MenuItem>
+      ))}
+  </Select>
+</FormControl> 
           {/* Incident Date */}  
           <TextField
             label="Incident Date"

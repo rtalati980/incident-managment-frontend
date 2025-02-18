@@ -23,7 +23,7 @@ const columns = [
     renderCell: (params) => (
       <Button variant="contained" size="small" color="primary">
         <Link
-          to={`/user-panel/incident/${params.row.No}/${params.row.id}`}
+          to={`/admin-panel/incident/${params.row.No}/${params.row.id}`}
           style={{ color: "white", textDecoration: "none" }}
         >
           Track

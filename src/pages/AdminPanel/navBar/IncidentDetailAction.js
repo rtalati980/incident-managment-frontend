@@ -34,7 +34,6 @@ function IncidentDetailAction() {
       }
     };
    
-    console.log(incident.id);
     
     const fetchIncidentHistory = async () => {
       try {
