@@ -124,7 +124,8 @@ export default function AssignIncident() {
   };
 
   // Handle action
-  const handleAction = async (incidentId) => {
+  const handleAction = async (event,incidentId) => {
+    event.preventDefault();
     try {
       const token = localStorage.getItem('jwt');
       if (!token) {

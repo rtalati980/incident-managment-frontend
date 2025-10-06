@@ -109,7 +109,7 @@ export default function IncidentDetailsAction() {
       if (!response.ok) throw new Error("Failed to create incident history");
   
       alert("Incident history recorded successfully!");
-      navigate("/incidents");
+      navigate("/user-panel/assignincdent");
   
     } catch (error) {
       console.error("Error creating incident history:", error);

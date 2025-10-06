@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useRef  } from "react";
 import { jwtDecode } from "jwt-decode";
 import {
   TextField,
@@ -33,6 +33,9 @@ const IncidentForm = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const fileInputRef = useRef(null);
+const [selectedAssignment, setSelectedAssignment] = useState("");
+
  
   useEffect(() => {
     const fetchData = async () => {
@@ -107,7 +110,7 @@ const IncidentForm = () => {
     assignments.forEach((id, index) =>
       formData.append(`assignments[${index}]`, id)
     );
-    files.forEach((file, index) => formData.append(`files[${index}]`, file));
+    files.forEach(file => formData.append('files', file));
     console.log("form:", formData);
     try {
       setLoading(true);
@@ -122,8 +125,19 @@ const IncidentForm = () => {
       }
       setSuccessMessage("Incident submitted successfully");
       setErrorMessage("");
-      setFiles([]);
-      setAssignments([]);
+      setObserverDescription("");
+      setInciDate("");
+    setInciTime("");
+    setSelectedLocation("");
+    setSelectedType("");
+    setSelectedCategory("");
+    setSelectedSubcategory("");
+    setAssignments([]);
+    setSelectedAssignment("");
+    setFiles([]);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
     } catch (err) {
       setErrorMessage(err.message || "Error submitting incident");
     } finally {
@@ -261,24 +275,29 @@ const IncidentForm = () => {
         />  
         {/* Assign Users */}  
         <TextField
-          label="Assign Users"
-          fullWidth
-          margin="normal"
-          select
-          onChange={(e) => handleAssignmentAdd(e.target.value)}
-        >
-            
-          {users.map((user) => (
-            <MenuItem key={user.id} value={user.id}>
-                
-              {user.name}  
-            </MenuItem>
-          ))}  
-        </TextField>  
+  label="Assign Users"
+  fullWidth
+  margin="normal"
+  select
+  value={selectedAssignment}
+  onChange={(e) => {
+    const value = e.target.value;
+    handleAssignmentAdd(value);
+    setSelectedAssignment(""); // ✅ resets dropdown immediately
+  }}
+>
+  {users.map((user) => (
+    <MenuItem key={user.id} value={user.id}>
+      {user.name}
+    </MenuItem>
+  ))}
+</TextField>
+
         {/* File Upload */}  
         <input
           type="file"
           multiple
+          ref={fileInputRef}
           onChange={handleFileChange}
           style={{ margin: "20px 0" }}
         />  

@@ -6,43 +6,47 @@ import config from '../../../config';
 
 const IncidentHistory = () => {
   const [historyData, setHistoryData] = useState([]);
+  const [page, setPage] = useState(0); // DataGrid page is 0-indexed
+  const [pageSize, setPageSize] = useState(10);
+  const [rowCount, setRowCount] = useState(0);
+  const [loading, setLoading] = useState(false);
+
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const statusFilter = queryParams.get('status');
 
+  const fetchIncidentHistory = async (page, pageSize) => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('jwt');
+      if (!token) throw new Error('JWT token not found');
+
+      // Fetch paginated data from API
+      const response = await fetch(`${config.API_BASE_URL}/api/incident-history?page=${page + 1}&limit=${pageSize}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!response.ok) throw new Error(`Failed to fetch incident history: ${response.statusText}`);
+
+      const data = await response.json();
+
+      // Apply optional status filter
+      const filtered = statusFilter
+        ? data.incidents.filter((record) => record.NewStatus === statusFilter)
+        : data.incidents;
+
+      setHistoryData(filtered);
+      setRowCount(data.totalItems); // total items for DataGrid pagination
+    } catch (err) {
+      console.error('Error fetching incident history:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchIncidentHistory = async () => {
-      try {
-        const token = localStorage.getItem('jwt');
-        if (!token) {
-          throw new Error('JWT token not found');
-        }
-
-        const response = await fetch(`${config.API_BASE_URL}/api/incident-history`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to fetch incident history: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-
-        if (statusFilter) {
-          const filteredData = data.filter((record) => record.NewStatus === statusFilter);
-          setHistoryData(filteredData);
-        } else {
-          setHistoryData(data);
-        }
-      } catch (error) {
-        console.error('Error fetching incident history:', error);
-      }
-    };
-
-    fetchIncidentHistory();
-  }, [statusFilter]);
+    fetchIncidentHistory(page, pageSize);
+  }, [page, pageSize, statusFilter]);
 
   const columns = [
     { field: 'HistoryID', headerName: 'History ID', width: 150 },
@@ -69,16 +73,18 @@ const IncidentHistory = () => {
       <DataGrid
         rows={historyData}
         columns={columns}
-        getRowId={(row) => row.HistoryID} // Specify unique identifier
-        pageSize={10}
+        getRowId={(row) => row.HistoryID}
+        pageSize={pageSize}
+        onPageSizeChange={(newSize) => setPageSize(newSize)}
         rowsPerPageOptions={[5, 10, 20]}
+        rowCount={rowCount} // total items from backend
+        pagination
+        paginationMode="server" // enable server-side pagination
+        onPageChange={(newPage) => setPage(newPage)}
+        loading={loading}
         checkboxSelection
         disableSelectionOnClick
-        sx={{
-          '& .MuiDataGrid-cell': {
-            whiteSpace: 'nowrap',
-          },
-        }}
+        sx={{ '& .MuiDataGrid-cell': { whiteSpace: 'nowrap' } }}
       />
     </Box>
   );
