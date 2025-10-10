@@ -1,11 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Card, CardContent, Typography, Box, Grid } from '@mui/material';
+import { Grid, Card, CardContent, Typography, Box, Divider, Chip, Stack } from '@mui/material';
 import './dash.css';
 import config from '../../../config';
+import { AssignmentTurnedIn, PeopleAlt } from '@mui/icons-material';
 
 
 export default function Dashboard() {
+const reported = { total: 0, open: 0, close: 0, inProgress: 0 };
+  const assigned = { total: 0, open: 0, close: 0, inProgress: 0 };
+
+  const statusChip = (label, count, color) => (
+    <Chip
+      label={`${label}: ${count}`}
+      color={color}
+      size="small"
+      variant="outlined"
+      component={Link}
+      to={`/user-panel/incident?status=${label}`}
+      clickable
+      sx={{ fontWeight: 500 }}
+    />
+  );
   const [incidents, setIncidents] = useState([]);
   const [statusCounts, setStatusCounts] = useState({ open: 0, closed: 0, inProgress: 0 });
   const [assignedUserIncidents, setAssignedUserIncidents] = useState([]);
@@ -86,52 +102,56 @@ export default function Dashboard() {
         DASHBOARD
       </Typography>
       <Grid container spacing={3}>
-        {/* Incident Reported Card */}
-        <Grid item xs={12} sm={6}>
-          <Card variant="outlined">
-            <CardContent>
-              <Typography variant="h6">Incident Reported</Typography>
-              <Link to={`/user-panel/incident`} style={{ textDecoration: 'none' }}>
-                <Typography variant="body1">Total: {incidents.length}</Typography>
-              </Link>
-              <Box mt={2}>
-                <Typography variant="subtitle1">Status</Typography>
-                <Link to={`/user-panel/incident?status=Open`} style={{ textDecoration: 'none' }}>
-                  <Typography variant="body2">Open: {statusCounts.open}</Typography>
-                </Link>
-                <Link to={`/user-panel/incident?status=Close`} style={{ textDecoration: 'none' }}>
-                  <Typography variant="body2">Close: {statusCounts.closed}</Typography>
-                </Link>
-                <Link to={`/user-panel/incident?status=InProgress`} style={{ textDecoration: 'none' }}>
-                  <Typography variant="body2">In Progress: {statusCounts.inProgress}</Typography>
-                </Link>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
+              {/* Incident Reported */}
+              <Grid item xs={12} md={6}>
+                <Card sx={{ borderRadius: 3, boxShadow: 4, p: 2 }}>
+                  <CardContent>
+                    <Stack direction="row" alignItems="center" spacing={1} mb={1}>
+                      <AssignmentTurnedIn color="primary" />
+                      <Typography variant="h6" fontWeight="600">
+                        Incident Reported
+                      </Typography>
+                    </Stack>
+                    <Divider sx={{ mb: 2 }} />
 
-        {/* Assigned User Incidents Card */}
-        <Grid item xs={12} sm={6}>
-          <Card variant="outlined">
-            <CardContent>
-              <Typography variant="h6">Assigned User Incidents</Typography>
-              <Typography variant="body1">Total: {assignedUserIncidents.length}</Typography>
-              <Box mt={2}>
-                <Typography variant="subtitle1">Status</Typography>
-                <Link to={`/incident-history?status=Open`} style={{ textDecoration: 'none' }}>
-                  <Typography variant="body2">Open: {assignedUserStatusCounts.open}</Typography>
-                </Link>
-                <Link to={`/incident-history?status=Close`} style={{ textDecoration: 'none' }}>
-                  <Typography variant="body2">Close: {assignedUserStatusCounts.closed}</Typography>
-                </Link>
-                <Link to={`/incident-history?status=InProgress`} style={{ textDecoration: 'none' }}>
-                  <Typography variant="body2">In Progress: {assignedUserStatusCounts.inProgress}</Typography>
-                </Link>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+                    <Typography variant="body1" fontWeight={500}>
+                      Total: <Typography component="span" color="primary"> {incidents.length}</Typography>
+                    </Typography>
+
+                    <Stack direction="row" spacing={1} mt={2}>
+                      {statusChip('Open', statusCounts.open, 'warning')}
+                      {statusChip('In Progress', statusCounts.inProgress, 'info')}
+                      {statusChip('Close', statusCounts.close, 'success')}
+                    </Stack>
+                  </CardContent>
+                </Card>
+              </Grid>
+
+              {/* Assigned User Incidents */}
+              <Grid item xs={12} md={6}>
+                <Card sx={{ borderRadius: 3, boxShadow: 4, p: 2 }}>
+                  <CardContent>
+                    <Stack direction="row" alignItems="center" spacing={1} mb={1}>
+                      <PeopleAlt color="secondary" />
+                      <Typography variant="h6" fontWeight="600">
+                        Assigned User Incidents
+                      </Typography>
+                    </Stack>
+                    <Divider sx={{ mb: 2 }} />
+
+                    <Typography variant="body1" fontWeight={500}>
+                      Total: <Typography component="span" color="secondary">{assignedUserIncidents.length}</Typography>
+                    </Typography>
+
+                    <Stack direction="row" spacing={1} mt={2}>
+                      {statusChip('Open', assignedUserStatusCounts.open, 'warning')}
+                      {statusChip('In Progress', assignedUserStatusCounts.inProgress, 'info')}
+                      {statusChip('Close', assignedUserStatusCounts.close, 'success')}
+                    </Stack>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
     </Box>
   );
 }
