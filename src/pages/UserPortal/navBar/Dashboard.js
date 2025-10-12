@@ -98,7 +98,7 @@ const reported = { total: 0, open: 0, close: 0, inProgress: 0 };
 
   return (
     <Box sx={{ p: 4 }}>
-      <Typography variant="h4" gutterBottom>
+      <Typography variant="h5" gutterBottom>
         DASHBOARD
       </Typography>
       <Grid container spacing={3}>

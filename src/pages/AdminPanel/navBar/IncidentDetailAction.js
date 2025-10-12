@@ -1,147 +1,202 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { Timeline, TimelineItem, TimelineSeparator, TimelineConnector, TimelineContent, TimelineDot } from '@mui/lab';
-import { Paper, Typography } from '@mui/material';
-import config from '../../../config';
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import {
+  Box,
+  Typography,
+  Paper,
+  Grid,
+  Divider,
+  Button,
+  Select,
+  MenuItem,
+  TextField,
+} from "@mui/material";
+import { Timeline, TimelineItem, TimelineSeparator, TimelineConnector, TimelineContent, TimelineDot } from "@mui/lab";
+import config from "../../../config";
 
-function IncidentDetailAction() {
-  const { No,id } = useParams();
+export default function AdminIncidentDetailAction() {
+  const { No, id } = useParams();
   const [incident, setIncident] = useState(null);
   const [historyData, setHistoryData] = useState([]);
+  const [status, setStatus] = useState("");
+  const [assignee, setAssignee] = useState("");
+  const [comments, setComments] = useState("");
+  const [assignees, setAssignees] = useState([]);
 
   useEffect(() => {
-    const fetchIncident = async () => {
-      try {
-        const token = localStorage.getItem('jwt');
-        if (!token) {
-          throw new Error('JWT token not found');
-        }
-
-        const response = await fetch(`${config.API_BASE_URL}/api/incidents/No/${No}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch incident');
-        }
-
-        const data = await response.json();
-        setIncident(data);
-      } catch (error) {
-        console.error('Error fetching incident:', error);
-      }
-    };
-   
-    
-    const fetchIncidentHistory = async () => {
-      try {
-        const token = localStorage.getItem('jwt');
-        if (!token) {
-          throw new Error('JWT token not found');
-        }
-
-        const response = await fetch(`${config.API_BASE_URL}/api/incident-history/incident/${id}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch incident history');
-        }
-
-        const data = await response.json();
-        setHistoryData(data);
-      } catch (error) {
-        console.error('Error fetching incident history:', error);
-      }
-    };
-
     fetchIncident();
     fetchIncidentHistory();
+    fetchAssignees();
   }, [No]);
 
-  console.log("uwsnwqwu",historyData[0]);
+  const fetchIncident = async () => {
+    try {
+      const token = localStorage.getItem("jwt");
+      const res = await fetch(`${config.API_BASE_URL}/api/incidents/No/${No}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      setIncident(data);
+      setStatus(data.status);
+      setAssignee(data.assignedTo);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-  if (!incident) {
-    return <div>Loading...</div>;
-  }
+  const fetchIncidentHistory = async () => {
+    try {
+      const token = localStorage.getItem("jwt");
+      const res = await fetch(`${config.API_BASE_URL}/api/incident-history/incident/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      setHistoryData(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const fetchAssignees = async () => {
+    try {
+      const token = localStorage.getItem("jwt");
+      const res = await fetch(`${config.API_BASE_URL}/api/auth`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      setAssignees(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleUpdate = () => {
+    // Call API to update status, assignee, and add comment
+    console.log({ status, assignee, comments });
+  };
+
+  if (!incident) return <Typography>Loading...</Typography>;
 
   return (
-    <div style={{padding:"20px  70px"}}>
-      <h2>Incident Detail - {incident.No}</h2>
-      <table className="incident-table">
-        <tbody>
-          <tr>
-            <th>No.</th>
-            <td>{incident.No}</td>
-          </tr>
-          <tr>
-            <th>Bay</th>
-            <td>{incident.workLocation}</td>
-          </tr>
-          <tr>
-            <th>Observer Description</th>
-            <td>{incident.observerDescription}</td>
-          </tr>
-          <tr>
-            <th>Type</th>
-            <td>{incident.type}</td>
-          </tr>
-          <tr>
-            <th>Category</th>
-            <td>{incident.category}</td>
-          </tr>
-          <tr>
-            <th>Sub Category</th>
-            <td>{incident.subcategory}</td>
-          </tr>
-          <tr>
-            <th>Status</th>
-            <td>{incident.status}</td>
-          </tr>
-          <tr>
-            <th>Action Taken</th>
-            <td>{incident.actionTaken}</td>
-          </tr>
-        </tbody>
-      </table>
+    <Box sx={{ p: 4 }}>
+      {/* Incident Summary */}
+      <Paper sx={{ p: 3, mb: 4 }} elevation={3}>
+        <Typography variant="h5" gutterBottom>
+          Incident #{incident.No} - Details
+        </Typography>
+        <Divider sx={{ mb: 2 }} />
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6} md={3}>
+            <Typography variant="subtitle2">Bay</Typography>
+            <Typography>{incident.workLocation}</Typography>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <Typography variant="subtitle2">Type</Typography>
+            <Typography>{incident.type}</Typography>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <Typography variant="subtitle2">Category</Typography>
+            <Typography>{incident.category}</Typography>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <Typography variant="subtitle2">Subcategory</Typography>
+            <Typography>{incident.subcategory}</Typography>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <Typography variant="subtitle2">Status</Typography>
+            <Typography>{incident.status}</Typography>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <Typography variant="subtitle2">Action Taken</Typography>
+            <Typography>{incident.actionTaken}</Typography>
+          </Grid>
+          <Grid item xs={12}>
+            <Typography variant="subtitle2">Observer Description</Typography>
+            <Typography>{incident.observerDescription}</Typography>
+          </Grid>
+        </Grid>
+      </Paper>
 
-      <h2>Incident History Timeline</h2>
-      <Timeline>
-        {historyData.map((record, index) => (
-          <TimelineItem key={record.HistoryID}>
-            <TimelineSeparator>
-              <TimelineDot color="primary" />
-              {index !== historyData.length - 1 && <TimelineConnector />}
-            </TimelineSeparator>
-            <TimelineContent>
-              <Paper elevation={3} style={{ padding: '10px' }}>
-                <Typography variant="h6">Status Change</Typography>
-                <Typography>
-                  <strong>Previous Status:</strong> {record.PreviousStatus}
-                </Typography>
-                <Typography>
-                  <strong>New Status:</strong> {record.NewStatus}
-                </Typography>
-                <Typography>
-                  <strong>Assignee:</strong> {record.PreviousAssigneeID} → {record.NewAssigneeID}
-                </Typography>
-                <Typography>
-                  <strong>Change Date:</strong> {new Date(record.ChangeTimestamp).toLocaleString()}
-                </Typography>
-                <Typography>
-                  <strong>Comment:</strong> {record.Comment || 'No comment'}
-                </Typography>
-              </Paper>
-            </TimelineContent>
-          </TimelineItem>
-        ))}
-      </Timeline>
-    </div>
+      {/* Admin Actions */}
+      <Paper sx={{ p: 3, mb: 4 }} elevation={3}>
+        <Typography variant="h6" gutterBottom>
+          Admin Actions
+        </Typography>
+        <Divider sx={{ mb: 2 }} />
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={12} sm={4}>
+            <Typography>Status</Typography>
+            <Select fullWidth value={status} onChange={(e) => setStatus(e.target.value)}>
+              <MenuItem value="OPEN">OPEN</MenuItem>
+              <MenuItem value="IN PROGRESS">IN PROGRESS</MenuItem>
+              <MenuItem value="CLOSED">CLOSED</MenuItem>
+            </Select>
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <Typography>Assign To</Typography>
+            <Select fullWidth value={assignee} onChange={(e) => setAssignee(e.target.value)}>
+              {assignees.map((user) => (
+                <MenuItem key={user.id} value={user.id}>{user.name}</MenuItem>
+              ))}
+            </Select>
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <Typography>Comments</Typography>
+            <TextField
+              fullWidth
+              value={comments}
+              onChange={(e) => setComments(e.target.value)}
+              placeholder="Add a comment..."
+              multiline
+              minRows={1}
+              maxRows={3}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <Button variant="contained" color="primary" onClick={handleUpdate}>
+              Update Incident
+            </Button>
+          </Grid>
+        </Grid>
+      </Paper>
+
+      {/* Incident History Timeline */}
+      <Paper sx={{ p: 3 }} elevation={3}>
+        <Typography variant="h6" gutterBottom>
+          Incident History
+        </Typography>
+        <Divider sx={{ mb: 2 }} />
+        <Timeline>
+          {historyData.map((record, index) => (
+            <TimelineItem key={record.HistoryID}>
+              <TimelineSeparator>
+                <TimelineDot color="primary" />
+                {index !== historyData.length - 1 && <TimelineConnector />}
+              </TimelineSeparator>
+              <TimelineContent>
+                <Paper sx={{ p: 2 }} elevation={2}>
+                  <Typography variant="subtitle1">Status Change</Typography>
+                  <Typography>
+                    <strong>Previous Status:</strong> {record.PreviousStatus}
+                  </Typography>
+                  <Typography>
+                    <strong>New Status:</strong> {record.NewStatus}
+                  </Typography>
+                  <Typography>
+                    <strong>Assignee:</strong> {record.PreviousAssigneeID} → {record.NewAssigneeID}
+                  </Typography>
+                  <Typography>
+                    <strong>Change Date:</strong> {new Date(record.ChangeTimestamp).toLocaleString()}
+                  </Typography>
+                  <Typography>
+                    <strong>Comment:</strong> {record.Comment || "No comment"}
+                  </Typography>
+                </Paper>
+              </TimelineContent>
+            </TimelineItem>
+          ))}
+        </Timeline>
+      </Paper>
+    </Box>
   );
 }
-
-export default IncidentDetailAction;
